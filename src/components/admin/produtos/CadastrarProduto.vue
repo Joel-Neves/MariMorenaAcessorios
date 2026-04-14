@@ -11,16 +11,22 @@
 
           <div class="form-group">
             <label for="nome">Nome do produto</label>
-            <input id="nome" v-model="produto.nome" type="text" required />
+            <input id="nome" v-model="produto.nome" type="text" required :class="{ 'is-invalid': v$.nome.$error }" />
+            <div v-if="v$.nome.$error" class="invalid-feedback">
+              {{ getFieldError('nome') }}
+            </div>
           </div>
 
           <div class="form-group">
             <label for="preco">Preço</label>
-            <input id="preco" v-model.number="produto.preco" type="number" step="0.01" required />
+            <input id="preco" v-model.number="produto.preco" type="number" step="0.01" required :class="{ 'is-invalid': v$.preco.$error }" />
+            <div v-if="v$.preco.$error" class="invalid-feedback">
+              {{ getFieldError('preco') }}
+            </div>
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
-            <select id="cor" v-model="produto.cor" required>
+            <select id="cor" v-model="produto.cor" required :class="{ 'is-invalid': v$.cor.$error }">
               <option value="">Selecione</option>
               <option value="dourado">Dourado</option>
               <option value="prata">Prata</option>
@@ -29,11 +35,12 @@
               <option value="preto">Preto</option>
               <option value="rosa">Rosa</option>
             </select>
+            <div v-if="v$.cor.$error" class="invalid-feedback">{{ getFieldError('cor') }}</div>
           </div>
 
           <div class="form-group">
             <label for="categoria">Categoria</label>
-            <select id="categoria" v-model="produto.categoria" required>
+            <select id="categoria" v-model="produto.categoria" required :class="{ 'is-invalid': v$.categoria.$error }" >
               <option value="">Selecione</option>
               <option value="Anéis">Anéis</option>
               <option value="Brincos">Brincos</option>
@@ -43,22 +50,29 @@
               <option value="Tiaras">Tiaras</option>
               <option value="Outros">Outros</option>
             </select>
+            <div v-if="v$.categoria.$error" class="invalid-feedback">{{ getFieldError('categoria') }}</div>
           </div>
           <div class="form-group">
             <label for="estoque">Estoque</label>
-            <input id="estoque" v-model.number="produto.estoque" type="number" step="0.01" required />
+            <input id="estoque" v-model.number="produto.estoque" type="number" step="1" min="0" required :class="{ 'is-invalid': v$.estoque.$error }" />
+            <div v-if="v$.estoque.$error" class="invalid-feedback">
+              {{ getFieldError('estoque') }}
+            </div>
           </div>
 
           <div class="form-group">
             <label for="descricao">Descrição</label>
-            <textarea id="descricao" v-model="produto.descricao" rows="4" required></textarea>
+            <textarea id="descricao" v-model="produto.descricao" rows="4" required :class="{ 'is-invalid': v$.descricao.$error }"></textarea>
+            <div v-if="v$.descricao.$error" class="invalid-feedback">
+              {{ getFieldError('descricao') }}
+            </div>
           </div>
         </section>
 
         <section class="form-box">
           <h2 class="section-title">Imagens e Mídia</h2>
 
-          <div class="upload-area" @dragover.prevent @drop.prevent="onDrop" @click="$refs.fileInput.click()">
+          <div class="upload-area" @dragover.prevent @drop.prevent="onDrop" @click="$refs.fileInput.click()" required :class="{ 'is-invalid': imagensInvalidas }">
             <div class="upload-content">
               <i class="fas fa-camera"></i>
               <p>Clique ou arraste arquivos aqui</p>
@@ -66,6 +80,10 @@
             </div>
             <input ref="fileInput" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.mp4"
               @change="onFileChange" style="display: none" />
+          </div>
+
+          <div v-if="imagensInvalidas" class="invalid-feedback">
+            Adicione pelo menos uma imagem ou vídeo do produto.
           </div>
 
           <div v-if="arquivos.length" class="file-list">
@@ -90,23 +108,54 @@
 
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { produtoService } from '@/services/produtoService';
 import { storageService } from '@/services/storageService';
+import { helpers, minLength, minValue, required, numeric } from '@vuelidate/validators';
+import { useVuelidate } from '@vuelidate/core';
 
 const produto = ref({
   nome: '',
   preco: null,
   cor: '',
   categoria: '',
-  estoque:null,
+  estoque: null,
   descricao: '',
-
   ativo: true,
 });
 
+const rules = {
+  nome: {
+    required: helpers.withMessage('O nome do produto é obrigatório.', required),
+    minLength: helpers.withMessage('O nome deve ter ao menos 3 caracteres.', minLength(3)),
+  },
+  preco: {
+    required: helpers.withMessage('O preço do produto é obrigatório.', required),
+    minValue: helpers.withMessage('O preço deve ser maior que zero.', minValue(0.01),),
+    numeric: helpers.withMessage('O preço deve ser um valor numérico.', numeric),
+  },
+  cor: {
+    required: helpers.withMessage('A cor do produto é obrigatória.', required),
+  },
+  categoria: {
+    required: helpers.withMessage('A categoria do produto é obrigatória.', required),
+  },
+  estoque: {
+    required: helpers.withMessage('O estoque do produto é obrigatório.', required),
+    minValue: helpers.withMessage('O estoque deve ser igual ou maior que zero.', minValue(0)),
+    numeric: helpers.withMessage('O estoque deve ser um valor numérico.', numeric),
+  },
+  descricao: {
+    required: helpers.withMessage('A descrição do produto é obrigatória.', required),
+    minLength: helpers.withMessage('A descrição deve ter ao menos 10 caracteres.', minLength(10)),
+  },
+};
+
+const v$ = useVuelidate(rules, produto);
+
 const arquivos = ref([]);
-const fileInput = ref(null);
+const tentouEnviar = ref(false);
+const imagensInvalidas = computed(() => tentouEnviar.value && arquivos.value.length === 0);
 
 const onFileChange = (event) => {
   const files = Array.from(event.target.files);
@@ -123,6 +172,14 @@ const removerArquivo = (index) => {
 };
 
 const salvarProduto = async () => {
+  tentouEnviar.value = true;
+  const formularioValido = await v$.value.$validate();
+
+  if (!formularioValido || arquivos.value.length === 0) {
+    alert('Revise os campos obrigatórios antes de salvar.');
+    return;
+  }
+
   try {
     const novoProduto = {
       ...produto.value,
@@ -156,10 +213,21 @@ const limparFormulario = () => {
   produto.value = {
     nome: '',
     preco: null,
+    cor: '',
     categoria: '',
-    descricao: ''
+    estoque: null,
+    descricao: '',
+    ativo: true,
   };
   arquivos.value = [];
+  tentouEnviar.value = false;
+  v$.value.$reset();
+};
+
+const getFieldError = (campo) => {
+  const field = v$.value[campo];
+  if (!field?.$errors?.length) return '';
+  return field.$errors[0].$message;
 };
 </script>
 
@@ -237,6 +305,17 @@ const limparFormulario = () => {
   border-radius: 6px;
   background: #fafafa;
   font-size: 1rem;
+}
+
+.is-invalid {
+  border-color: #c0392b !important;
+  background: #fff4f4;
+}
+
+.invalid-feedback {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #c0392b;
 }
 
 .upload-area {
