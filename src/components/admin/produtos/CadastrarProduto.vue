@@ -26,15 +26,8 @@
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
-            <select id="cor" v-model="produto.cor" required :class="{ 'is-invalid': v$.cor.$error }">
-              <option value="">Selecione</option>
-              <option value="dourado">Dourado</option>
-              <option value="prata">Prata</option>
-              <option value="verde">Verde</option>
-              <option value="vermelho">Vermelho</option>
-              <option value="preto">Preto</option>
-              <option value="rosa">Rosa</option>
-            </select>
+            <input id="cor" v-model="produto.cor" required :class="{ 'is-invalid': v$.cor.$error }"/>
+          </input>
             <div v-if="v$.cor.$error" class="invalid-feedback">{{ getFieldError('cor') }}</div>
           </div>
 
