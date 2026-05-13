@@ -61,7 +61,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email as emailValidator, minLength, numeric, maxLength } from '@vuelidate/validators';
+import { required, email as emailValidator, minLength, numeric, maxLength, helpers } from '@vuelidate/validators';
 import { authService } from '@/services/authService';
 
 const router = useRouter();
@@ -75,7 +75,11 @@ const error = ref('');
 const rules = {
   displayName: { required },
   email: { required, email: emailValidator },
-  password: { required, minLength: minLength(8) },
+  password: {
+    required,
+    minLength: minLength(8),
+    hasUpper: helpers.regex('hasUpperAndNumber', /^(?=.*[A-Z])(?=.*[0-9]).*$/)
+  },
   telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
 };
 const arquivo = ref([]);
