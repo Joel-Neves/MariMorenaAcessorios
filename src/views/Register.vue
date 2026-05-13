@@ -25,7 +25,7 @@
           <label for="password">Senha:</label>
           <input type="password" id="password" v-model="password" :class="{ 'is-invalid': v$.password.$error }"
           @blur="v$.password.$touch()"  
-          placeholder="Digite sua senha (mín. 6 caracteres)" />
+          placeholder="Digite sua senha (mín. 8 caracteres)" />
           <div v-if="v$.password.$error" class="error-message">
             <div v-for="error in v$.password.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>
@@ -75,7 +75,7 @@ const error = ref('');
 const rules = {
   displayName: { required },
   email: { required, email: emailValidator },
-  password: { required, minLength: minLength(6) },
+  password: { required, minLength: minLength(8) },
   telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
 };
 const arquivo = ref([]);
