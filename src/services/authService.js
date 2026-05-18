@@ -23,7 +23,7 @@ export const authService = {
       }
 
       // Registrar usuário
-      const response = await apiClient.post('/auth/register', {
+      const response = await apiClient.post('/users', {
         email,
         password,
         nome: displayName,
@@ -54,7 +54,7 @@ export const authService = {
 
   async updateProfile(updates) {
     try {
-      const response = await apiClient.put('/auth/profile', updates);
+      const response = await apiClient.put('/users/{id}/profile', updates);
       localStorage.setItem('currentUser', JSON.stringify(response.user));
       return response.user;
     } catch (error) {

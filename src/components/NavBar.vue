@@ -59,7 +59,7 @@ function isAdmin(){
   return usuario.value?.eAdmin === true;
 }
 
-authService.onAuthStateChange(async (user) => {
+authService.isAuthenticated(async (user) => {
   eAutenticado.value = !!user;
   if (user) {
     usuario.value = await usuarioService.buscarPorId(user.uid);

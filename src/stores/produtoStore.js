@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { produtoService } from '../services/produtoService';
 
-export const useProdutoStore = defineStore('produtos', {
+export const useProdutoStore = defineStore('products', {
   state: () => ({
     produtos: [],
     produtoAtual: null,
@@ -14,13 +14,14 @@ export const useProdutoStore = defineStore('produtos', {
       return state.produtos.find(produto => produto.id === id);
     },
 
-    produtosPorCategoria: (state) => (categoria) => {
-      if (!categoria) return state.produtos;
-      return state.produtos.filter(produto => produto.categoria === categoria);
+    produtosPorCategoria: (state) => (category) => {
+      if (!category) return state.produtos;
+      return state.produtos.filter(produto => (produto.categoria || produto.category) === category);
     },
 
     categorias(state) {
-      const cats = state.produtos.map(p => p.categoria);
+      const produtos = Array.isArray(state.produtos) ? state.produtos : [];
+      const cats = produtos.map(p => p.categoria || p.category).filter(Boolean);
       return [...new Set(cats)];
     }
   },
@@ -30,7 +31,8 @@ export const useProdutoStore = defineStore('produtos', {
       this.carregando = true;
       this.erro = null;
       try {
-        this.produtos = await produtoService.listarTodos();
+        const produtos = await produtoService.listarTodos();
+        this.produtos = Array.isArray(produtos) ? produtos : [];
       } catch (error) {
         this.erro = error.message;
         console.error('Erro ao carregar produtos:', error);

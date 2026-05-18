@@ -10,12 +10,12 @@
           Todos
         </button>
         <button
-          v-for="categoria in categorias"
-          :key="categoria"
-          :class="['filtro-btn', { active: categoriaSelecionada === categoria }]"
-          @click="filtrarCategoria(categoria)"
+          v-for="category in categories"
+          :key="category"
+          :class="['filtro-btn', { active: categoriaSelecionada === category }]"
+          @click="filtrarCategoria(category)"
         >
-          {{ categoria }}
+          {{ category }}
         </button>
       </div>
 
@@ -59,11 +59,11 @@ const produtosFiltrados = computed(() => {
   if (!categoriaSelecionada.value) {
     return filtered;
   }
-  return filtered.filter(produto => produto.categoria === categoriaSelecionada.value);
+  return filtered.filter(produto => produto.category === categoriaSelecionada.value);
 });
 
-const filtrarCategoria = (categoria) => {
-  categoriaSelecionada.value = categoria;
+const filtrarCategoria = (category) => {
+  categoriaSelecionada.value = category;
 };
 
 onMounted(async () => {
