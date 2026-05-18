@@ -1,16 +1,9 @@
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { db } from './firebase/config';
-
-const COLLECTION_NAME = 'produtos';
+import apiClient from './api';
 
 export const produtoService = {
   async listarTodos() {
     try {
-      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return await apiClient.get('/produtos');
     } catch (error) {
       console.error('Erro ao listar produtos:', error);
       throw new Error('Não foi possível carregar os produtos');
@@ -19,14 +12,7 @@ export const produtoService = {
 
   async buscarPorId(id) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() };
-      } else {
-        throw new Error('Produto não encontrado');
-      }
+      return await apiClient.get(`/produtos/${id}`);
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
       throw error;
@@ -35,12 +21,7 @@ export const produtoService = {
 
   async buscarPorCategoria(categoria) {
     try {
-      const q = query(collection(db, COLLECTION_NAME), where('categoria', '==', categoria));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return await apiClient.get(`/produtos/categoria/${categoria}`);
     } catch (error) {
       console.error('Erro ao buscar produtos por categoria:', error);
       throw new Error('Não foi possível buscar os produtos');
@@ -49,8 +30,7 @@ export const produtoService = {
 
   async criar(produto) {
     try {
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), produto);
-      return { id: docRef.id, ...produto };
+      return await apiClient.post('/produtos', produto);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       throw new Error('Não foi possível criar o produto');
@@ -59,9 +39,7 @@ export const produtoService = {
 
   async atualizar(id, dadosAtualizados) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      await updateDoc(docRef, dadosAtualizados);
-      return { id, ...dadosAtualizados };
+      return await apiClient.put(`/produtos/${id}`, dadosAtualizados);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       throw new Error('Não foi possível atualizar o produto');
@@ -70,7 +48,7 @@ export const produtoService = {
 
   async deletar(id) {
     try {
-      await deleteDoc(doc(db, COLLECTION_NAME, id));
+      await apiClient.delete(`/produtos/${id}`);
       return true;
     } catch (error) {
       console.error('Erro ao deletar produto:', error);

@@ -1,16 +1,9 @@
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
-import { db } from './firebase/config';
-
-const COLLECTION_NAME = 'pedidos';
+import apiClient from './api';
 
 export const pedidoService = {
   async listarTodos() {
     try {
-      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return await apiClient.get('/pedidos');
     } catch (error) {
       console.error('Erro ao listar pedidos:', error);
       throw new Error('Não foi possível carregar os pedidos');
@@ -19,14 +12,7 @@ export const pedidoService = {
 
   async buscarPorId(id) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() };
-      } else {
-        throw new Error('Pedido não encontrado');
-      }
+      return await apiClient.get(`/pedidos/${id}`);
     } catch (error) {
       console.error('Erro ao buscar pedido:', error);
       throw error;
@@ -35,12 +21,7 @@ export const pedidoService = {
 
   async buscarPorUsuario(userId) {
     try {
-      const q = query(collection(db, COLLECTION_NAME), where('usuarioId', '==', userId));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return await apiClient.get(`/pedidos/usuario/${userId}`);
     } catch (error) {
       console.error('Erro ao buscar pedidos por usuário:', error);
       throw new Error('Não foi possível buscar os pedidos');
@@ -49,12 +30,7 @@ export const pedidoService = {
 
   async buscarPorStatus(status) {
     try {
-      const q = query(collection(db, COLLECTION_NAME), where('status', '==', status), orderBy('dataCriacao', 'desc'));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return await apiClient.get(`/pedidos/status/${status}`);
     } catch (error) {
       console.error('Erro ao buscar pedidos por status:', error);
       throw new Error('Não foi possível buscar os pedidos');
@@ -63,8 +39,7 @@ export const pedidoService = {
 
   async criar(pedido) {
     try {
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), pedido);
-      return { id: docRef.id, ...pedido };
+      return await apiClient.post('/pedidos', pedido);
     } catch (error) {
       console.error('Erro ao criar pedido:', error);
       throw new Error('Não foi possível criar o pedido');
@@ -73,9 +48,7 @@ export const pedidoService = {
 
   async atualizar(id, dadosAtualizados) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      await updateDoc(docRef, dadosAtualizados);
-      return { id, ...dadosAtualizados };
+      return await apiClient.put(`/pedidos/${id}`, dadosAtualizados);
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
       throw new Error('Não foi possível atualizar o pedido');
@@ -84,7 +57,7 @@ export const pedidoService = {
 
   async deletar(id) {
     try {
-      await deleteDoc(doc(db, COLLECTION_NAME, id));
+      await apiClient.delete(`/pedidos/${id}`);
       return true;
     } catch (error) {
       console.error('Erro ao deletar pedido:', error);

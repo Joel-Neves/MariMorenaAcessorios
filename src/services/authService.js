@@ -1,74 +1,62 @@
-import { auth } from './firebase/config';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile,
-  sendPasswordResetEmail
-} from 'firebase/auth';
-import { usuarioService } from './usuarioService';
-import { storageService } from './storageService';
+import apiClient from './api';
 
 export const authService = {
   async login(email, password) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      const response = await apiClient.post('/auth/login', { email, password });
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('currentUser', JSON.stringify(response.user));
+      return response.user;
     } catch (error) {
       console.error('Erro ao fazer login:', error);
-      throw new Error('Email ou senha incorretos');
+      throw new Error(error.message || 'Email ou senha incorretos');
     }
   },
 
   async registrar(email, password, displayName, arquivoFoto, dadosAdicionais = {}) {
-    try{
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const uid = user.uid;
-      let photoUrlFinal = '';
-
-      await user.getIdToken(true);
-
+    try {
+      // Fazer upload da foto se fornecida
+      let photoURL = '';
       if (arquivoFoto) {
-        const uploadFoto = await storageService.uploadFotoUsuario(arquivoFoto, uid);
-
-        photoUrlFinal = uploadFoto.url;
+        const uploadResponse = await this.uploadFoto(arquivoFoto);
+        photoURL = uploadResponse.url;
       }
 
-      await updateProfile(user, { displayName, photoURL: photoUrlFinal })
+      // Registrar usuário
+      const response = await apiClient.post('/auth/register', {
+        email,
+        password,
+        nome: displayName,
+        photoURL,
+        telefone: dadosAdicionais.telefone,
+        ...dadosAdicionais
+      });
 
-      const dadosFireStore = {
-        photoURL: photoUrlFinal,
-        ...dadosAdicionais,
-        dataCriacao: new Date().toISOString().split("T")[0],
-        eAdmin: false
-      }
-
-      const novoUsuario = await usuarioService.criar(dadosFireStore, uid);
-      return novoUsuario;
-    }catch (error){
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('currentUser', JSON.stringify(response.user));
+      return response.user;
+    } catch (error) {
       console.error('Erro ao registrar usuário:', error);
-      throw new Error(error.message);
+      throw new Error(error.message || 'Erro ao registrar usuário');
     }
   },
 
   async logout() {
     try {
-      await signOut(auth);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      return true;
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       throw new Error('Erro ao fazer logout');
     }
   },
 
-  onAuthStateChange(callback) {
-    return onAuthStateChanged(auth, callback);
-  },
-
   async updateProfile(updates) {
     try {
-      await updateProfile(auth.currentUser, updates);
+      const response = await apiClient.put('/auth/profile', updates);
+      localStorage.setItem('currentUser', JSON.stringify(response.user));
+      return response.user;
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       throw new Error('Erro ao atualizar perfil');
@@ -77,23 +65,51 @@ export const authService = {
 
   async resetPassword(email) {
     try {
-      await sendPasswordResetEmail(auth, email);
+      await apiClient.post('/auth/reset-password', { email });
+      return true;
     } catch (error) {
       console.error('Erro ao enviar email de redefinição:', error);
       throw new Error('Erro ao enviar email de redefinição');
     }
   },
 
-  getCurrentUser() {
-    return auth.currentUser;
+  async uploadFoto(file) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      console.error('Erro ao fazer upload da foto:', error);
+      throw new Error('Erro ao fazer upload da foto');
+    }
   },
 
-  waitForUser() {
-    return new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        unsubscribe();
+  getCurrentUser() {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
+  },
+
+  getToken() {
+    return localStorage.getItem('authToken');
+  },
+
+  isAuthenticated() {
+    return !!localStorage.getItem('authToken');
+  },
+
+  async waitForUser() {
+    return new Promise((resolve) => {
+      const user = this.getCurrentUser();
+      if (user) {
         resolve(user);
-      }, reject);
+      } else {
+        setTimeout(() => {
+          resolve(this.getCurrentUser());
+        }, 100);
+      }
     });
   }
 };

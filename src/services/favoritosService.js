@@ -1,30 +1,35 @@
-import { collection, getDocs, doc, addDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { db } from './firebase/config';
-
-const COLLECTION_NAME = 'favoritos';
+import apiClient from './api';
 
 export const favoritosService = {
   async carregarFavoritos(userId) {
-    const q = query(collection(db, COLLECTION_NAME), where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    try {
+      return await apiClient.get(`/favoritos/usuario/${userId}`);
+    } catch (error) {
+      console.error('Erro ao carregar favoritos:', error);
+      throw error;
+    }
   },
 
   async adicionarFavorito(userId, produto) {
-    const favorito = {
-      userId: userId,
-      produtoId: produto.id,
-      produto: produto,
-      dataAdicionado: new Date()
-    };
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), favorito);
-    return { id: docRef.id, ...favorito };
+    try {
+      return await apiClient.post('/favoritos', {
+        userId,
+        produtoId: produto.id,
+        produto,
+        dataAdicionado: new Date()
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar favorito:', error);
+      throw error;
+    }
   },
 
   async removerFavorito(favoritoId) {
-    await deleteDoc(doc(db, COLLECTION_NAME, favoritoId));
+    try {
+      await apiClient.delete(`/favoritos/${favoritoId}`);
+    } catch (error) {
+      console.error('Erro ao remover favorito:', error);
+      throw error;
+    }
   }
 };
