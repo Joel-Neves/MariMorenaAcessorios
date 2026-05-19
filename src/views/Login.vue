@@ -40,9 +40,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/services/authService';
-import { usuarioService } from '@/services/usuarioService';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email as emailValidator, minLength } from '@vuelidate/validators';
+import { required, email as emailValidator, minLength, helpers } from '@vuelidate/validators';
 
 const router = useRouter();
 const email = ref('');
@@ -52,7 +51,12 @@ const error = ref('');
 
 const rules = {
   email: { required, email: emailValidator },
-  password: { required, minLength: minLength(6) }
+  password: {
+    required,
+    minLength: minLength(8),
+    hasUpper: helpers.regex(/(?=.*[A-Z])/),
+    hasNumber: helpers.regex(/(?=.*[0-9])/)
+  }
 };
 
 const v$ = useVuelidate(rules, { email, password });
@@ -66,17 +70,15 @@ const handleLogin = async () => {
   try {
     const user = await authService.login(email.value, password.value);
 
-    const usuario = await usuarioService.buscarPorId(user.uid);
-    
-    if (usuario.eAdmin === true) {
+    if (!user?.email) {
+      throw new Error('Dados do usuário inválidos');
+    }
+
+    if (user.userRole === 'ADMIN') {
       router.push('/admin/dashboard');
     } else {
       router.push('/');
     }
-
-    console.error('Erro ao verificar se é admin:', adminCheckError);
-    router.push('/');
-
   } catch (err) {
     error.value = err.message;
   } finally {

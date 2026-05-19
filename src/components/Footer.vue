@@ -32,20 +32,24 @@
 <script setup>
 import { usuarioService } from '@/services/usuarioService';
 import { authService } from '@/services/authService';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 const usuario = ref(null);
 const eAutenticado = ref(false);
-
-const user = authService.getCurrentUser();
 
 function isAdmin(){
   return usuario.value?.eAdmin === true;
 }
 
-authService.isAuthenticated(async (user) => {
+onMounted(async () => {
+  const user = await authService.waitForUser();
   eAutenticado.value = !!user;
   if (user) {
-    usuario.value = await usuarioService.buscarPorId(user.uid);
+    try {
+      usuario.value = await usuarioService.buscarPorId(user.id);
+    } catch (err) {
+      console.error('Erro ao buscar usuário no footer:', err);
+      usuario.value = null;
+    }
   } else {
     usuario.value = null;
   }

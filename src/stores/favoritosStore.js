@@ -31,7 +31,7 @@ export const useFavoritosStore = defineStore('favoritos', {
       this.carregando = true;
       this.erro = null;
       try {
-        this.favoritos = await favoritosService.carregarFavoritos(user.uid);
+        this.favoritos = await favoritosService.carregarFavoritos(user.id);
       } catch (error) {
         this.erro = error.message;
         console.error('Erro ao carregar favoritos:', error);
@@ -49,7 +49,7 @@ export const useFavoritosStore = defineStore('favoritos', {
       this.carregando = true;
       this.erro = null;
       try {
-        const novoFavorito = await favoritosService.adicionarFavorito(user.uid, produto);
+        const novoFavorito = await favoritosService.adicionarFavorito(user.id, produto);
         this.favoritos.push(novoFavorito);
       } catch (error) {
         this.erro = error.message;

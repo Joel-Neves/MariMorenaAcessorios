@@ -39,12 +39,6 @@
             <div v-for="error in v$.telefone.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="photoUrl">Escolha uma photoUrl:</label>
-            <input type="file" id="photoUrl" @change="handlephotoUrlUpload" accept="image/*" />
-          </div>
-        </div>
         <button type="submit" :disabled="loading" class="btn-register">
           {{ loading ? 'Cadastrando...' : 'Cadastrar' }}
         </button>
@@ -78,15 +72,10 @@ const rules = {
   password: {
     required,
     minLength: minLength(8),
-    hasUpper: helpers.regex('hasUpperAndNumber', /^(?=.*[A-Z])(?=.*[0-9]).*$/)
+    hasUpper: helpers.regex(/(?=.*[A-Z])/),
+    hasNumber: helpers.regex(/(?=.*[0-9])/)
   },
   telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
-};
-const arquivo = ref([]);
-
-const handlephotoUrlUpload = (event) => {
-  const file = event.target.files[0];
-  arquivo.value = file ? [file] : [];
 };
 
 const v$ = useVuelidate(rules, { displayName, email, password, telefone });
@@ -99,17 +88,14 @@ const handleRegister = async () => {
   error.value = '';
 
   try {
-    const arquivoFoto = arquivo.value[0] || null;
+    await authService.registrar(
+      displayName.value,
+      email.value,
+      telefone.value,
+      password.value
+    );
 
-    const userData = {
-      nome: displayName.value,
-      email: email.value,
-      telefone: telefone.value
-    };
-
-    await authService.registrar(email.value, password.value, displayName.value, arquivoFoto, userData);
-
-    router.push('/');
+    router.push('/login'); // ou redirecionar para dashboard se auto-login
   } catch (err) {
     error.value = err.message;
   } finally {

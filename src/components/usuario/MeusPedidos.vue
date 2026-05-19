@@ -116,7 +116,7 @@ const carregarPedidos = async () => {
   loading.value = true;
 
   try {
-    const userPedidos = await pedidoService.buscarPorUsuario(currentUser.uid);
+    const userPedidos = await pedidoService.buscarPorUsuario(currentUser.id);
     console.log('User pedidos:', userPedidos);
 
     userPedidos.forEach(pedido => {

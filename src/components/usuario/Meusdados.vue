@@ -147,7 +147,7 @@ onMounted(async () => {
 
   loading.value = true;
   try {
-    const data = await usuarioService.buscarPorId(currentUser.uid);
+    const data = await usuarioService.buscarPorId(currentUser.id);
 
     userData.value = {
       ...userData.value, 
@@ -224,7 +224,7 @@ const salvarDados = async () => {
       endereco: userData.value.endereco
     };
 
-    await usuarioService.atualizar(currentUser.uid, updatedData);
+    await usuarioService.atualizar(currentUser.id, updatedData);
 
     success.value = 'Dados atualizados com sucesso!';
 

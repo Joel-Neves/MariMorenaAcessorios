@@ -1,115 +1,143 @@
-import apiClient from './api';
+import axiosInstance from "./api"; // seu cliente axios
 
 export const authService = {
-  async login(email, password) {
+  /**
+   * Registrar novo usuário
+   * O backend retorna um UserResponseDTO
+   */
+  async registrar(displayName, email, telefone, password) {
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('currentUser', JSON.stringify(response.user));
-      return response.user;
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      throw new Error(error.message || 'Email ou senha incorretos');
-    }
-  },
-
-  async registrar(email, password, displayName, arquivoFoto, dadosAdicionais = {}) {
-    try {
-      // Fazer upload da foto se fornecida
-      let photoURL = '';
-      if (arquivoFoto) {
-        const uploadResponse = await this.uploadFoto(arquivoFoto);
-        photoURL = uploadResponse.url;
-      }
-
-      // Registrar usuário
-      const response = await apiClient.post('/users', {
+      const response = await axiosInstance.post('/users', {
+        name: displayName,
         email,
-        password,
-        nome: displayName,
-        photoURL,
-        telefone: dadosAdicionais.telefone,
-        ...dadosAdicionais
+        phone: telefone,
+        password
       });
 
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('currentUser', JSON.stringify(response.user));
-      return response.user;
+      // Extrair usuário da resposta (axios retorna em response.data)
+      const user = response?.data ?? response ?? null;
+
+      if (!user) {
+        throw new Error('Resposta do servidor inválida: usuário não retornado');
+      }
+
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      return user;
     } catch (error) {
-      console.error('Erro ao registrar usuário:', error);
-      throw new Error(error.message || 'Erro ao registrar usuário');
+      const msg = error?.response?.data?.message || error?.message || 'Erro ao registrar';
+      throw new Error(msg);
     }
   },
 
+  /**
+   * Fazer login
+   * Recebe email + password, retorna UserResponseDTO
+   */
+  async login(email, password) {
+    try {
+      const response = await axiosInstance.post('/auth/login', {
+        email,
+        password
+      });
+
+      const user = response?.data?.user ?? null;
+      if (!user) throw new Error('Usuário não retornado');
+
+      // Armazene o usuário logado
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      // Não precisa chamar /me agora!
+      return user;
+    } catch (error) {
+      throw new Error(error?.response?.data?.message || error?.message);
+    }
+  },
+
+  /**
+   * Fazer logout
+   * Limpa localStorage e encerra sessão HTTP
+   */
   async logout() {
     try {
-      localStorage.removeItem('authToken');
+
+      await axiosInstance.post('/auth/logout');
+
       localStorage.removeItem('currentUser');
       return true;
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      throw new Error('Erro ao fazer logout');
+      throw error;
     }
   },
 
-  async updateProfile(updates) {
-    try {
-      const response = await apiClient.put('/users/{id}/profile', updates);
-      localStorage.setItem('currentUser', JSON.stringify(response.user));
-      return response.user;
-    } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
-      throw new Error('Erro ao atualizar perfil');
-    }
-  },
-
-  async resetPassword(email) {
-    try {
-      await apiClient.post('/auth/reset-password', { email });
-      return true;
-    } catch (error) {
-      console.error('Erro ao enviar email de redefinição:', error);
-      throw new Error('Erro ao enviar email de redefinição');
-    }
-  },
-
-  async uploadFoto(file) {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await apiClient.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response;
-    } catch (error) {
-      console.error('Erro ao fazer upload da foto:', error);
-      throw new Error('Erro ao fazer upload da foto');
-    }
-  },
-
+  /**
+   * Obter usuário armazenado em localStorage
+   * Parse seguro com tratamento de erro
+   */
   getCurrentUser() {
-    const user = localStorage.getItem('currentUser');
-    return user ? JSON.parse(user) : null;
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return null;
+    try {
+      return JSON.parse(userStr);
+    } catch (e) {
+      console.warn('Invalid currentUser in localStorage, removing it.', e);
+      localStorage.removeItem('currentUser');
+      return null;
+    }
   },
 
-  getToken() {
-    return localStorage.getItem('authToken');
-  },
-
+  /**
+   * Verificar se está autenticado
+   */
   isAuthenticated() {
-    return !!localStorage.getItem('authToken');
+    return !!this.getCurrentUser();
   },
 
+  /**
+   * Espera pelo usuário armazenado no localStorage (útil em guards)
+   */
   async waitForUser() {
     return new Promise((resolve) => {
-      const user = this.getCurrentUser();
-      if (user) {
-        resolve(user);
-      } else {
-        setTimeout(() => {
-          resolve(this.getCurrentUser());
-        }, 100);
-      }
+      const start = Date.now();
+      const timeout = 1000;
+  
+      const checkUser = () => {
+        const user = this.getCurrentUser();
+  
+        if (user) {
+          resolve(user);
+          return;
+        }
+  
+        if (Date.now() - start >= timeout) {
+          resolve(null);
+          return;
+        }
+  
+        setTimeout(checkUser, 100);
+      };
+  
+      checkUser();
     });
+  },
+
+  /**
+   * Validar autenticação com o backend
+   * Retorna usuário se autenticado, lança erro se não
+   */
+  async verifyAuth() {
+    try {
+      const response = await axiosInstance.get('/auth/me');
+      const user = response?.data ?? response ?? null;
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      }
+      return user;
+    } catch (error) {
+      localStorage.removeItem('currentUser');
+      throw error;
+    }
   }
 };
+
+export default authService;

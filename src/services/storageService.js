@@ -1,4 +1,4 @@
-import apiClient from './api';
+import axiosInstance from './api';
 
 export const storageService = {
   async uploadImagem(file, caminho) {
@@ -6,7 +6,7 @@ export const storageService = {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('caminho', caminho);
-      const response = await apiClient.post('/upload', formData, {
+      const response = await axiosInstance.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.url;
@@ -36,7 +36,7 @@ export const storageService = {
 
   async deletarImagem(caminhoCompleto) {
     try {
-      await apiClient.delete('/upload', { data: { caminho: caminhoCompleto } });
+      await axiosInstance.delete('/upload', { data: { caminho: caminhoCompleto } });
       return true;
     } catch (error) {
       console.error('Erro ao deletar imagem:', error);
@@ -46,7 +46,7 @@ export const storageService = {
 
   async getImagemURL(caminho) {
     try {
-      const response = await apiClient.get('/upload/url', { params: { caminho } });
+      const response = await axiosInstance.get('/upload/url', { params: { caminho } });
       return response.url;
     } catch (error) {
       console.error('Erro ao obter URL da imagem:', error);

@@ -1,9 +1,9 @@
-import apiClient from './api';
+import axiosInstance from './api';
 
 export const pedidoService = {
   async listarTodos() {
     try {
-      return await apiClient.get('/pedidos');
+      return await axiosInstance.get('/pedidos');
     } catch (error) {
       console.error('Erro ao listar pedidos:', error);
       throw new Error('Não foi possível carregar os pedidos');
@@ -12,7 +12,7 @@ export const pedidoService = {
 
   async buscarPorId(id) {
     try {
-      return await apiClient.get(`/pedidos/${id}`);
+      return await axiosInstance.get(`/pedidos/${id}`);
     } catch (error) {
       console.error('Erro ao buscar pedido:', error);
       throw error;
@@ -21,7 +21,7 @@ export const pedidoService = {
 
   async buscarPorUsuario(userId) {
     try {
-      return await apiClient.get(`/pedidos/usuario/${userId}`);
+      return await axiosInstance.get(`/pedidos/usuario/${userId}`);
     } catch (error) {
       console.error('Erro ao buscar pedidos por usuário:', error);
       throw new Error('Não foi possível buscar os pedidos');
@@ -30,7 +30,7 @@ export const pedidoService = {
 
   async buscarPorStatus(status) {
     try {
-      return await apiClient.get(`/pedidos/status/${status}`);
+      return await axiosInstance.get(`/pedidos/status/${status}`);
     } catch (error) {
       console.error('Erro ao buscar pedidos por status:', error);
       throw new Error('Não foi possível buscar os pedidos');
@@ -39,7 +39,7 @@ export const pedidoService = {
 
   async criar(pedido) {
     try {
-      return await apiClient.post('/pedidos', pedido);
+      return await axiosInstance.post('/pedidos', pedido);
     } catch (error) {
       console.error('Erro ao criar pedido:', error);
       throw new Error('Não foi possível criar o pedido');
@@ -48,7 +48,7 @@ export const pedidoService = {
 
   async atualizar(id, dadosAtualizados) {
     try {
-      return await apiClient.put(`/pedidos/${id}`, dadosAtualizados);
+      return await axiosInstance.put(`/pedidos/${id}`, dadosAtualizados);
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
       throw new Error('Não foi possível atualizar o pedido');
@@ -57,7 +57,7 @@ export const pedidoService = {
 
   async deletar(id) {
     try {
-      await apiClient.delete(`/pedidos/${id}`);
+      await axiosInstance.delete(`/pedidos/${id}`);
       return true;
     } catch (error) {
       console.error('Erro ao deletar pedido:', error);

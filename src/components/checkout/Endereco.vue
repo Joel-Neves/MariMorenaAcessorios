@@ -148,7 +148,7 @@ onMounted(async () => {
   }
 
   try {
-    const data = await usuarioService.buscarPorId(currentUser.uid);
+    const data = await usuarioService.buscarPorId(currentUser.id);
     const possuiEnderecoSalvo = data.endereco &&
       ['cep', 'rua', 'numero', 'bairro', 'cidade', 'estado'].every((campo) => !!data.endereco[campo]);
 
@@ -210,7 +210,7 @@ const salvarEndereco = async () => {
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
     try {
-      await usuarioService.atualizar(currentUser.uid, { endereco: { ...endereco.value } });
+      await usuarioService.atualizar(currentUser.id, { endereco: { ...endereco.value } });
       enderecoSalvo.value = { ...endereco.value };
     } catch (err) {
       console.error('Erro ao salvar endereço do usuário:', err);

@@ -1,48 +1,32 @@
-import apiClient from './api';
+import axiosInstance from './api';
 
-function mapProduto(apiProduto) {
-  if (!apiProduto) return null;
-
-  const imagens = Array.isArray(apiProduto.imagens)
-    ? apiProduto.imagens.map((imagem) => (typeof imagem === 'string' ? { url: imagem } : imagem)).filter(Boolean)
-    : Array.isArray(apiProduto.images)
-      ? apiProduto.images.map((imagem) => (typeof imagem === 'string' ? { url: imagem } : imagem)).filter(Boolean)
-      : [];
-
+const mapProduto = (data) => {
   return {
-    ...apiProduto,
-    nome: apiProduto.nome ?? apiProduto.name ?? '',
-    descricao: apiProduto.descricao ?? apiProduto.description ?? '',
-    preco: Number(apiProduto.preco ?? apiProduto.price ?? 0),
-    estoque: Number(apiProduto.estoque ?? apiProduto.quantity ?? 0),
-    categoria: apiProduto.categoria ?? apiProduto.category ?? null,
-    cor: apiProduto.cor ?? apiProduto.color ?? '',
-    imagens
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    quantity: data.quantity,
+    color: data.color,
+    category: data.category,
+    imageUrl: data.imageUrl
   };
 }
 
-function extrairListaProdutos(data) {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.content)) return data.content;
-  if (Array.isArray(data?.products)) return data.products;
-  if (Array.isArray(data?.items)) return data.items;
-  return [];
-}
 
 export const produtoService = {
-  async listarTodos() {
+  async buscarTodos() {
     try {
-      const data = await apiClient.get('/products');
-      return extrairListaProdutos(data).map(mapProduto);
+      return await axiosInstance.get('/products');
     } catch (error) {
-      console.error('Erro ao listar produtos:', error);
-      throw new Error('Não foi possível carregar os produtos');
+      console.error('Erro ao buscar produtos:', error);
+      throw new Error('Não foi possível buscar os produtos');
     }
   },
 
   async buscarPorId(id) {
     try {
-      const data = await apiClient.get(`/products/${id}`);
+      const data = await axiosInstance.get(`/products/${id}`);
       return mapProduto(data);
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
@@ -52,8 +36,8 @@ export const produtoService = {
 
   async buscarPorCategoria(category) {
     try {
-      const data = await apiClient.get(`/products/category/${category}`);
-      return extrairListaProdutos(data).map(mapProduto);
+      const data = await axiosInstance.get(`/products/category/${category}`);
+      return data.map(mapProduto);
     } catch (error) {
       console.error('Erro ao buscar produtos por categoria:', error);
       throw new Error('Não foi possível buscar os produtos');
@@ -62,7 +46,7 @@ export const produtoService = {
 
   async criar(product) {
     try {
-      const data = await apiClient.post('/products', product);
+      const data = await axiosInstance.post('/products', product);
       return mapProduto(data);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
@@ -72,7 +56,7 @@ export const produtoService = {
 
   async atualizar(id, dadosAtualizados) {
     try {
-      const data = await apiClient.put(`/products/${id}`, dadosAtualizados);
+      const data = await axiosInstance.put(`/products/${id}`, dadosAtualizados);
       return mapProduto(data);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
@@ -82,7 +66,7 @@ export const produtoService = {
 
   async deletar(id) {
     try {
-      await apiClient.delete(`/products/${id}`);
+      await axiosInstance.delete(`/products/${id}`);
       return true;
     } catch (error) {
       console.error('Erro ao deletar produto:', error);

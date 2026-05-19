@@ -136,7 +136,7 @@ const finalizarPedido = async () => {
     }
 
     const pedido = {
-      usuarioId: user.uid,
+      usuarioId: user.id,
       itens: itensSacola.value.map(item => ({
         produtoId: item.id,
         quantidade: item.quantidade

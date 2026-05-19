@@ -31,7 +31,7 @@ export const useProdutoStore = defineStore('products', {
       this.carregando = true;
       this.erro = null;
       try {
-        const produtos = await produtoService.listarTodos();
+        const produtos = await produtoService.buscarTodos();
         this.produtos = Array.isArray(produtos) ? produtos : [];
       } catch (error) {
         this.erro = error.message;

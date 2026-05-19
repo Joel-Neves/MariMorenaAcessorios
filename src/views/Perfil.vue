@@ -2,7 +2,7 @@
     <div class="perfil-container">
         <div class="sidebar">
             <div class="user-photo">
-                <img :src="user?.photoURL || '/default-avatar.png'" alt="Foto do Usuário" class="avatar" />
+                <img :src="user?.photoURL || defaultAvatar" alt="Foto do usuário" class="avatar" />
                 <h3>{{ user?.displayName || 'Usuário' }}</h3>
             </div>
             <nav class="sidebar-nav">
@@ -20,6 +20,7 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/services/authService';
+import defaultAvatar from '@/assets/default-avatar.png';
 
 const router = useRouter();
 

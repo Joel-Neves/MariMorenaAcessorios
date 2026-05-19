@@ -23,7 +23,7 @@
           </svg>
         </router-link>
         <router-link v-if="eAutenticado" to="/perfil/meus-dados" class="nav-link">
-          <img :src="usuario?.photoURL || '/default-avatar.png'" alt="Foto do Usuário" class="user-avatar" />
+          <img :src="usuario?.photoURL || AvatarDefault" alt="Foto do Usuário" class="user-avatar" />
         </router-link>
         <div v-else class="dropdown">
           <button @click="toggleDropdown" class="dropdown-toggle nav-link">
@@ -42,13 +42,13 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useSacolaStore } from '../stores/sacolaStore';
 import { authService } from '@/services/authService';
 import { usuarioService } from '@/services/usuarioService';
 import { mdiAccountCircle, mdiHeart, mdiHome, mdiShopping } from '@mdi/js';
+import AvatarDefault from '@/assets/default-avatar.png';
 
-const user = authService.getCurrentUser();
 const sacolaStore = useSacolaStore();
 const totalItens = computed(() => sacolaStore.totalItens);
 const dropdownOpen = ref(false);
@@ -56,15 +56,18 @@ const usuario = ref(null);
 const eAutenticado = ref(false);
 
 function isAdmin(){
-  return usuario.value?.eAdmin === true;
+  return usuario.value?.role === 'ADMIN';
 }
 
-authService.isAuthenticated(async (user) => {
-  eAutenticado.value = !!user;
-  if (user) {
-    usuario.value = await usuarioService.buscarPorId(user.uid);
-  } else {
-    usuario.value = null;
+onMounted(async () => {
+  try {
+    const currentUser = authService.isAuthenticated();
+    if (currentUser) {
+      eAutenticado.value = true;
+      usuario.value = await usuarioService.buscarPorEmail(currentUser.email);
+    }
+  } catch (error) {
+    console.error('Erro ao buscar dados do usuário:', error);
   }
 });
 
