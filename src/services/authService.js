@@ -59,11 +59,8 @@ export const authService = {
    */
   async logout() {
     try {
-
       await axiosInstance.post('/auth/logout');
-
       localStorage.removeItem('currentUser');
-      return true;
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       throw error;

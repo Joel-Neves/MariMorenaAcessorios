@@ -4,7 +4,7 @@
     <form @submit.prevent="salvarDados" v-if="userData" class="dados-form">
       <div class="form-group">
         <label for="nome">Nome:</label>
-        <input type="text" id="nome" v-model="userData.nome" required placeholder="Digite seu nome" />
+        <input type="text" id="nome" v-model="userData.displayName" required placeholder="Digite seu nome" />
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
@@ -13,42 +13,42 @@
       </div>
       <div class="form-group">
         <label for="telefone">Telefone:</label>
-        <input type="tel" id="telefone" v-model="userData.telefone" placeholder="Digite seu telefone" />
+        <input type="tel" id="telefone" v-model="userData.phone" placeholder="Digite seu telefone" />
       </div>
       <h3>Endereço</h3>
       <div class="form-group">
         <label for="cep">CEP:</label>
-          <input type="text" id="cep" v-model="userData.endereco.cep" @input="buscarCep" maxlength="8" />
+          <input type="text" id="cep" v-model="userData.address.zipCode" @input="buscarCep" maxlength="8" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="rua">Rua:</label>
-          <input type="text" id="rua" v-model="userData.endereco.rua" placeholder="Nome da rua" />
+          <input type="text" id="rua" v-model="userData.address.street" placeholder="Nome da rua" />
         </div>
         <div class="form-group">
           <label for="numero">Número:</label>
-          <input type="text" id="numero" v-model="userData.endereco.numero" placeholder="123" />
+          <input type="text" id="numero" v-model="userData.address.number" placeholder="123" />
         </div>
       </div>
       <div class="form-group">
         <label for="complemento">Complemento:</label>
-        <input type="text" id="complemento" v-model="userData.endereco.complemento"
+        <input type="text" id="complemento" v-model="userData.address.complement"
           placeholder="Apartamento, bloco, etc." />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="bairro">Bairro:</label>
-          <input type="text" id="bairro" v-model="userData.endereco.bairro" placeholder="Nome do bairro" />
+          <input type="text" id="bairro" v-model="userData.address.neighborhood" placeholder="Nome do bairro" />
         </div>
         <div class="form-group">
           <label for="cidade">Cidade:</label>
-          <input type="text" id="cidade" v-model="userData.endereco.cidade" placeholder="Nome da cidade" />
+          <input type="text" id="cidade" v-model="userData.address.city" placeholder="Nome da cidade" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="estado">Estado:</label>
-          <select id="estado" v-model="userData.endereco.estado">
+          <select id="estado" v-model="userData.address.state">
             <option value="">Selecione</option>
             <option value="AC">Acre</option>
             <option value="AL">Alagoas</option>
@@ -81,7 +81,7 @@
         </div>
         <div class="form-group">
           <label for="pais">País:</label>
-          <input type="text" id="pais" v-model="userData.endereco.pais" value="Brasil" readonly />
+          <input type="text" id="pais" v-model="userData.address.country" value="Brasil" readonly />
         </div>
       </div>
       <button type="submit" :disabled="loading" class="btn-salvar">
@@ -104,18 +104,18 @@ import { usuarioService } from '@/services/usuarioService';
 import { buscarEnderecoViaCep } from '@/services/cepService';
 
 const userData = ref({
-  nome: '',
+  displayName: '',
   email: '',
-  telefone: '',
-  endereco: {
-    cep: '',
-    rua: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: '',
-    estado: '',
-    pais: 'Brasil' 
+  phone: '',
+  address: {
+    zipCode: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    country: 'Brasil' 
   }
 });
 const loading = ref(false);
@@ -124,15 +124,15 @@ const success = ref('');
 const cepTimeout = ref(null); 
 
 const rules = computed(() => ({
-  nome: { required, minLength: minLength(8), maxLength: maxLength(100) },
-  telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) },
-  endereco: {
-    cep: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
-    rua: { required, minLength: minLength(3) },
-    numero: { required, numeric, minLength: minLength(2), maxLength: maxLength(5) },
-    bairro: { required, minLength: minLength(2) },
-    cidade: { required, minLength: minLength(2) },
-    estado: { required }
+  displayName: { required, minLength: minLength(8), maxLength: maxLength(100) },
+  phone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) },
+  address: {
+    zipCode: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
+    street: { required, minLength: minLength(3) },
+    number: { required, numeric, minLength: minLength(2), maxLength: maxLength(5) },
+    neighborhood: { required, minLength: minLength(2) },
+    city: { required, minLength: minLength(2) },
+    state: { required }
   }
 }));
 
@@ -153,10 +153,11 @@ onMounted(async () => {
       ...userData.value, 
       ...data,
       email: data.email || currentUser.email,
-      nome: data.nome || currentUser.displayName || '',
-      endereco: {
-        ...userData.value.endereco,
-        ...data.endereco
+      displayName: data.name || currentUser.name || '',
+      phone: data.phone || currentUser.phone || '',
+      address: {
+        ...userData.value.address,
+        ...data.address
       }
     };
 
@@ -171,8 +172,8 @@ onMounted(async () => {
 const buscarCep = () => {
   clearTimeout(cepTimeout.value);
 
-  let cepLimpo = userData.value.endereco.cep.replace(/\D/g, '');
-  userData.value.endereco.cep = cepLimpo;
+  let cepLimpo = userData.value.address.zipCode.replace(/\D/g, '');
+  userData.value.address.zipCode = cepLimpo;
 
   if (cepLimpo.length === 8) {
     cepTimeout.value = setTimeout(async () => {
@@ -181,16 +182,16 @@ const buscarCep = () => {
         loading.value = true;
         const endereco = await buscarEnderecoViaCep(cepLimpo);
 
-        userData.value.endereco.rua = endereco.logradouro;
-        userData.value.endereco.bairro = endereco.bairro;
-        userData.value.endereco.cidade = endereco.localidade; 
-        userData.value.endereco.estado = endereco.uf;
+        userData.value.address.street = endereco.logradouro;
+        userData.value.address.neighborhood = endereco.bairro;
+        userData.value.address.city = endereco.localidade; 
+        userData.value.address.state = endereco.uf;
 
       } catch (err) {
-        userData.value.endereco.rua = '';
-        userData.value.endereco.bairro = '';
-        userData.value.endereco.cidade = '';
-        userData.value.endereco.estado = '';
+        userData.value.address.street = '';
+        userData.value.address.neighborhood = '';
+        userData.value.address.city = '';
+        userData.value.address.state = '';
         error.value = 'CEP não encontrado ou inválido.';
       } finally {
         loading.value = false;
@@ -214,14 +215,11 @@ const salvarDados = async () => {
   success.value = '';
 
   try {
-    if (currentUser.displayName !== userData.value.nome) {
-      await authService.updateProfile({ displayName: userData.value.nome });
-    }
 
     const updatedData = {
-      nome: userData.value.nome,
-      telefone: userData.value.telefone,
-      endereco: userData.value.endereco
+      name: userData.value.displayName,
+      phone: userData.value.phone,
+      address: userData.value.address
     };
 
     await usuarioService.atualizar(currentUser.id, updatedData);

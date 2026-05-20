@@ -3,7 +3,7 @@
         <div class="sidebar">
             <div class="user-photo">
                 <img :src="user?.photoURL || defaultAvatar" alt="Foto do usuário" class="avatar" />
-                <h3>{{ user?.displayName || 'Usuário' }}</h3>
+                <h3>{{ user.name || 'Usuário' }}</h3>
             </div>
             <nav class="sidebar-nav">
                 <router-link to="/perfil/meus-dados" class="sidebar-link">Meus Dados</router-link>
@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '@/services/authService';
 import defaultAvatar from '@/assets/default-avatar.png';
@@ -26,11 +26,6 @@ const router = useRouter();
 
 const user = computed(() => authService.getCurrentUser());
 
-onMounted(() => {
-    if (!user.value) {
-        router.push('/login');
-    }
-});
 
 const logout = async () => {
     try {
