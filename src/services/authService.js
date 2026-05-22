@@ -61,6 +61,7 @@ export const authService = {
     try {
       await axiosInstance.post('/auth/logout');
       localStorage.removeItem('currentUser');
+      location.reload(); // Força recarregar para limpar estado
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       throw error;
