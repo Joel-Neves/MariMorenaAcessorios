@@ -5,10 +5,10 @@ export const authService = {
    * Registrar novo usuário
    * O backend retorna um UserResponseDTO
    */
-  async registrar(displayName, email, telefone, password) {
+  async registrar(name, email, telefone, password) {
     try {
       const response = await axiosInstance.post('/users', {
-        name: displayName,
+        name: name,
         email,
         phone: telefone,
         password

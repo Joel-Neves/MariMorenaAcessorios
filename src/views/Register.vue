@@ -4,12 +4,12 @@
       <h2>Cadastrar-se</h2>
       <form @submit.prevent="handleRegister">
         <div class="form-group">
-          <label for="displayName">Nome:</label>
-          <input type="text" id="displayName" v-model="displayName" :class="{ 'is-invalid': v$.displayName.$error }"
-            @blur="v$.displayName.$touch()"
+          <label for="name">Nome:</label>
+          <input type="text" id="name" v-model="name" :class="{ 'is-invalid': v$.name.$error }"
+            @blur="v$.name.$touch()"
             placeholder="Digite seu nome" />
-          <div v-if="v$.displayName.$error" class="error-message">
-            <div v-for="error in v$.displayName.$errors" :key="error.$uid">{{ error.$message }}</div>
+          <div v-if="v$.name.$error" class="error-message">
+            <div v-for="error in v$.name.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>
         </div>
         <div class="form-group">
@@ -59,7 +59,7 @@ import { required, email as emailValidator, minLength, numeric, maxLength, helpe
 import { authService } from '@/services/authService';
 
 const router = useRouter();
-const displayName = ref('');
+const name = ref('');
 const email = ref('');
 const password = ref('');
 const telefone = ref('');
@@ -67,7 +67,7 @@ const loading = ref(false);
 const error = ref('');
 
 const rules = {
-  displayName: { required },
+  name: { required },
   email: { required, email: emailValidator },
   password: {
     required,
@@ -78,7 +78,7 @@ const rules = {
   telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
 };
 
-const v$ = useVuelidate(rules, { displayName, email, password, telefone });
+const v$ = useVuelidate(rules, { name, email, password, telefone });
 
 const handleRegister = async () => {
   const isFormCorrect = await v$.value.$validate();
@@ -89,7 +89,7 @@ const handleRegister = async () => {
 
   try {
     await authService.registrar(
-      displayName.value,
+      name.value,
       email.value,
       telefone.value,
       password.value

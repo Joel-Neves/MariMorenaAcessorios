@@ -4,7 +4,7 @@
     <form @submit.prevent="salvarDados" v-if="userData" class="dados-form">
       <div class="form-group">
         <label for="nome">Nome:</label>
-        <input type="text" id="nome" v-model="userData.displayName" required placeholder="Digite seu nome" />
+        <input type="text" id="nome" v-model="userData.name" required placeholder="Digite seu nome" />
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
@@ -104,7 +104,7 @@ import { usuarioService } from '@/services/usuarioService';
 import { buscarEnderecoViaCep } from '@/services/cepService';
 
 const userData = ref({
-  displayName: '',
+  name: '',
   email: '',
   phone: '',
   address: {
@@ -124,7 +124,7 @@ const success = ref('');
 const cepTimeout = ref(null); 
 
 const rules = computed(() => ({
-  displayName: { required, minLength: minLength(8), maxLength: maxLength(100) },
+  name: { required, minLength: minLength(8), maxLength: maxLength(100) },
   phone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) },
   address: {
     zipCode: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
@@ -153,7 +153,7 @@ onMounted(async () => {
       ...userData.value, 
       ...data,
       email: data.email || currentUser.email,
-      displayName: data.name || currentUser.name || '',
+      name: data.name || currentUser.name || '',
       phone: data.phone || currentUser.phone || '',
       address: {
         ...userData.value.address,
@@ -217,7 +217,7 @@ const salvarDados = async () => {
   try {
 
     const updatedData = {
-      name: userData.value.displayName,
+      name: userData.value.name,
       phone: userData.value.phone,
       address: userData.value.address
     };

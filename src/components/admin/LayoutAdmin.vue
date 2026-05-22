@@ -45,7 +45,7 @@
           <h2>Painel Administrativo</h2>
         </div>
         <div class="navbar-profile">
-          <span>Olá, {{ usuario.displayName }}</span>
+          <span>Olá, {{ usuario.name }}</span>
           <img :src="usuario?.photoURL || '/default-avatar.png'" alt="Foto do Usuário" class="profile-avatar" />
         </div>
       </header>
