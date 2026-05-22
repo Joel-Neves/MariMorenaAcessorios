@@ -1,56 +1,71 @@
 import axiosInstance from './api';
 
 export const storageService = {
-  async uploadImagem(file, caminho) {
+
+  async uploadImage(file, productId, onUploadProgress) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      /*isso é para mostrar o progresso do upload, se a função onUploadProgress for passada como argumento,
+      *ela será chamada com o progresso do upload
+      */
+      onUploadProgress: (progressEvent) => {
+        if (!onUploadProgress) return;
+        const progress = Math.round((progressEvent.loaded * 300) / progressEvent.total);
+        onUploadProgress(progress, progressEvent);
+      },
+    };
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('caminho', caminho);
-      const response = await axiosInstance.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response.url;
+      const response = await axiosInstance.post(`/products/${productId}/images`, formData, config);
+      return response.data;
     } catch (error) {
-      console.error('Erro ao fazer upload da imagem:', error);
-      throw new Error('Não foi possível fazer upload da imagem');
+      if (error.response) {
+        throw new Error(error.response.data?.message || 'Erro durante o upload');
+      } else {
+        throw new Error(error.message || 'Erro de rede durante o upload');
+      }
     }
   },
-
-  async uploadFotoUsuario(file, usuarioId) {
-    const timestamp = Date.now();
-    const nomeArquivo = `${usuarioId}_${timestamp}_${file.name}`;
-    const caminho = `usuarios/${usuarioId}/${nomeArquivo}`;
-
-    const url = await this.uploadImagem(file, caminho);
-    return { url, caminho };
-  },
-
-  async uploadImagemProduto(file, produtoId) {
-    const timestamp = Date.now();
-    const nomeArquivo = `${produtoId}_${timestamp}_${file.name}`;
-    const caminho = `produtos/${produtoId}/${nomeArquivo}`;
-
-    const url = await this.uploadImagem(file, caminho);
-    return { url, caminho };
-  },
-
-  async deletarImagem(caminhoCompleto) {
+  async getAllImagesByProductId(productId) {
     try {
-      await axiosInstance.delete('/upload', { data: { caminho: caminhoCompleto } });
-      return true;
+      const response = await axiosInstance.get(`/products/${productId}/images`);
+      return response.data;
     } catch (error) {
-      console.error('Erro ao deletar imagem:', error);
-      throw new Error('Não foi possível deletar a imagem');
+      throw new Error(error.response?.data?.message || 'Erro ao buscar imagens');
     }
   },
-
-  async getImagemURL(caminho) {
+  async getImageById(imageId, productId) {
     try {
-      const response = await axiosInstance.get('/upload/url', { params: { caminho } });
-      return response.url;
+      const response = await axiosInstance.get(`/products/${productId}/images/${imageId}`);
+      return response.data;
     } catch (error) {
-      console.error('Erro ao obter URL da imagem:', error);
-      throw new Error('Não foi possível obter a URL da imagem');
+      throw new Error(error.response?.data?.message || 'Erro ao buscar imagem');
+    }
+  },
+  async updateImage(imageId, file, productId) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    try {
+      const response = await axiosInstance.put(`/products/${productId}/images/${imageId}`, formData, config);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Erro ao atualizar imagem');
+    }
+  },
+  async deleteImage(imageId, productId) {
+    try {
+      await axiosInstance.delete(`/products/${productId}/images/${imageId}`);
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Erro ao deletar imagem');
     }
   }
 };

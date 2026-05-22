@@ -1,4 +1,4 @@
-export async function buscarEnderecoViaCep(cep) {
+export async function findByZipCode(cep) {
   const cepLimpo = cep.replace(/\D/g, '');
 
   if (cepLimpo.length !== 8) {
@@ -18,9 +18,9 @@ export async function buscarEnderecoViaCep(cep) {
   }
 
   return {
-    cidade: data.localidade,
-    estado: data.uf,
-    bairro: data.bairro,
-    logradouro: data.logradouro
+    city: data.localidade,
+    state: data.uf,
+    neighborhood: data.bairro,
+    street: data.logradouro
   };
 }

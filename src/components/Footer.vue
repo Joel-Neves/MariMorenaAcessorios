@@ -11,8 +11,8 @@
         <ul>
           <li><router-link to="/">Catálogo</router-link></li>
           <li><router-link to="/sacola">Sacola</router-link></li>
-          <li><router-link to="/perfil/favoritos">Favorito</router-link></li>
-          <li><router-link to="/perfil/meus-dados">Perfil</router-link></li>
+          <li><router-link to="/perfil/favorites">Favorite</router-link></li>
+          <li><router-link to="/perfil/my-data">Perfil</router-link></li>
         </ul>
       </div>
 
@@ -30,14 +30,14 @@
 </template>
 
 <script setup>
-import { usuarioService } from '@/services/usuarioService';
+import { userService } from '@/services/userService';
 import { authService } from '@/services/authService';
 import { computed, ref, onMounted } from 'vue';
-const usuario = ref(null);
+const user = ref(null);
 const eAutenticado = ref(false);
 
 function isAdmin(){
-  return usuario.value?.eAdmin === true;
+  return user.value?.eAdmin === true;
 }
 
 onMounted(async () => {
@@ -45,13 +45,13 @@ onMounted(async () => {
   eAutenticado.value = !!user;
   if (user) {
     try {
-      usuario.value = await usuarioService.buscarPorId(user.id);
+      user.value = await userService.buscarPorId(user.id);
     } catch (err) {
       console.error('Erro ao buscar usuário no footer:', err);
-      usuario.value = null;
+      user.value = null;
     }
   } else {
-    usuario.value = null;
+    user.value = null;
   }
 });
 

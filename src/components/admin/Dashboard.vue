@@ -7,8 +7,8 @@
       <div class="kpis-section">
         <div class="kpi-card">
           <div class="kpi-content">
-            <div class="kpi-value">{{ pedidosHoje }}</div>
-            <div class="kpi-label">Pedidos hoje</div>
+            <div class="kpi-value">{{ ordersHoje }}</div>
+            <div class="kpi-label">Orders hoje</div>
           </div>
           <div class="kpi-icon">
             <i class="fas fa-arrow-right"></i>
@@ -34,8 +34,8 @@
         </div>
         <div class="kpi-card">
           <div class="kpi-content">
-            <div class="kpi-value">{{ clientesAtivos }}</div>
-            <div class="kpi-label">Clientes ativos</div>
+            <div class="kpi-value">{{ clientsAtivos }}</div>
+            <div class="kpi-label">Clients ativos</div>
           </div>
           <div class="kpi-icon">
             <i class="fas fa-arrow-right"></i>
@@ -45,20 +45,20 @@
 
       <!-- Modules Section -->
       <div class="modules-section">
-        <!-- Novos Pedidos -->
+        <!-- Novos Orders -->
         <div class="module-panel">
-          <h2 class="module-title">Novos pedidos</h2>
-          <div v-if="loadingPedidos" class="loading">Carregando pedidos...</div>
-          <div v-else-if="errorPedidos" class="error">{{ errorPedidos }}</div>
-          <div v-else class="pedidos-list">
-            <div v-for="pedido in pedidosRecentes" :key="pedido.id" class="pedido-item">
-              <div class="pedido-info">
-                <span class="pedido-numero">nº {{ pedido.numero }}</span>
-                <span class="pedido-produto">{{ pedido.produtoNome }}</span>
+          <h2 class="module-title">Novos orders</h2>
+          <div v-if="loadingOrders" class="loading">Carregando orders...</div>
+          <div v-else-if="errorOrders" class="error">{{ errorOrders }}</div>
+          <div v-else class="orders-list">
+            <div v-for="order in ordersRecentes" :key="order.id" class="order-item">
+              <div class="order-info">
+                <span class="order-numero">nº {{ order.numero }}</span>
+                <span class="order-produto">{{ order.produtoName }}</span>
               </div>
-              <div class="pedido-status">
-                <i v-if="pedido.status === 'processando'" class="fas fa-spinner fa-spin status-loading"></i>
-                <i v-else-if="pedido.status === 'entregue'" class="fas fa-check status-completed"></i>
+              <div class="order-status">
+                <i v-if="order.status === 'processando'" class="fas fa-spinner fa-spin status-loading"></i>
+                <i v-else-if="order.status === 'entregue'" class="fas fa-check status-completed"></i>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@
           <div v-else-if="errorProdutos" class="error">{{ errorProdutos }}</div>
           <div v-else class="produtos-list">
             <div v-for="produto in produtosVendidos" :key="produto.id" class="produto-item">
-              <span class="produto-nome">{{ produto.nome }}</span>
+              <span class="produto-name">{{ produto.name }}</span>
               <span class="produto-volume">{{ produto.volume }}</span>
             </div>
           </div>
@@ -83,19 +83,19 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { pedidoService } from '@/services/pedidoService'
-import { produtoService } from '@/services/produtoService'
-import { usuarioService } from '@/services/usuarioService'
+import { orderService } from '@/services/orderService'
+import { produtoService } from '@/services/productService'
+import { userService } from '@/services/userService'
 
-const pedidosHoje = ref('--')
+const ordersHoje = ref('--')
 const estoque = ref('--')
 const vendasMes = ref('R$ --,--')
-const clientesAtivos = ref('--')
+const clientsAtivos = ref('--')
 const produtos = ref([])
 
-const pedidosRecentes = ref([])
-const loadingPedidos = ref(true)
-const errorPedidos = ref(null)
+const ordersRecentes = ref([])
+const loadingOrders = ref(true)
+const errorOrders = ref(null)
 
 const produtosVendidos = ref([])
 const loadingProdutos = ref(true)
@@ -104,9 +104,9 @@ const errorProdutos = ref(null)
 const carregarKPIs = async () => {
   try {
     const hoje = new Date().toISOString().split('T')[0]
-    const pedidos = await pedidoService.listarTodos()
-    const pedidosHojeCount = pedidos.filter(p => p.dataCriacao && p.dataCriacao === hoje).length
-    pedidosHoje.value = pedidosHojeCount
+    const orders = await orderService.listarTodos()
+    const ordersHojeCount = orders.filter(p => p.dataCriacao && p.dataCriacao === hoje).length
+    ordersHoje.value = ordersHojeCount
 
     const produtos = await produtoService.listarTodos()
     const estoqueTotal = produtos.reduce((sum, p) => sum + (p.estoque || 0), 0)
@@ -114,7 +114,7 @@ const carregarKPIs = async () => {
 
     const mesAtual = new Date().getMonth() + 1
     const anoAtual = new Date().getFullYear()
-    const vendas = pedidos.filter(p => {
+    const vendas = orders.filter(p => {
       if (p.status !== 'entregue') return false
       const data = p.dataCriacao.toDate ? p.dataCriacao.toDate() : new Date(p.dataCriacao)
       return data.getMonth() + 1 === mesAtual && data.getFullYear() === anoAtual
@@ -122,49 +122,49 @@ const carregarKPIs = async () => {
     const totalVendas = vendas.reduce((sum, p) => sum + (p.total || 0), 0)
     vendasMes.value = totalVendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-    const usuarios = await usuarioService.listarTodos()
-    clientesAtivos.value = usuarios.length
+    const users = await userService.listarTodos()
+    clientsAtivos.value = users.length
   } catch (err) {
     console.error('Erro ao carregar KPIs:', err)
   }
 }
 
-const carregarPedidosRecentes = async () => {
+const carregarOrdersRecentes = async () => {
   try {
-    const pedidos = await pedidoService.listarTodos()
+    const orders = await orderService.listarTodos()
     const produtos = await produtoService.listarTodos()
     const produtoMap = produtos.reduce((map, prod) => {
-      map[prod.id] = prod.nome
+      map[prod.id] = prod.name
       return map
     }, {})
 
-    const pedidosOrdenados = pedidos.sort((a, b) => {
+    const ordersOrdenados = orders.sort((a, b) => {
       const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao)
       const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao)
       return dataB - dataA
     })
-    pedidosRecentes.value = pedidosOrdenados.slice(0, 4).map((p) => ({
+    ordersRecentes.value = ordersOrdenados.slice(0, 4).map((p) => ({
       id: p.id,
       numero: p.id, 
-      produtoNome: p.itens?.map(item => produtoMap[item.produtoId]).join(', '),
+      produtoName: p.itens?.map(item => produtoMap[item.produtoId]).join(', '),
       status: p.status
     }))
   } catch (err) {
-    errorPedidos.value = 'Erro ao carregar pedidos: ' + err.message
+    errorOrders.value = 'Erro ao carregar orders: ' + err.message
   } finally {
-    loadingPedidos.value = false
+    loadingOrders.value = false
   }
 }
 
 const carregarProdutosVendidos = async () => {
   try {
     const produtos = await produtoService.listarTodos()
-    const pedidos = await pedidoService.listarTodos()
+    const orders = await orderService.listarTodos()
 
     // Calculate total sold quantity for each product
-    const vendasPorProduto = pedidos.reduce((acc, pedido) => {
-      if (pedido.itens && pedido.status === 'entregue') {
-        pedido.itens.forEach(item => {
+    const vendasPorProduto = orders.reduce((acc, order) => {
+      if (order.itens && order.status === 'entregue') {
+        order.itens.forEach(item => {
           if (item.produtoId) {
             acc[item.produtoId] = (acc[item.produtoId] || 0) + (item.quantidade)
           }
@@ -177,7 +177,7 @@ const carregarProdutosVendidos = async () => {
     produtosVendidos.value = produtos
       .map(p => ({
         id: p.id,
-        nome: p.nome,
+        name: p.name,
         volume: vendasPorProduto[p.id] || 0
       }))
       .sort((a, b) => b.volume - a.volume)
@@ -191,7 +191,7 @@ const carregarProdutosVendidos = async () => {
 
 onMounted(() => {
   carregarKPIs()
-  carregarPedidosRecentes()
+  carregarOrdersRecentes()
   carregarProdutosVendidos()
 })
 </script>
@@ -295,14 +295,14 @@ onMounted(() => {
 }
 
 /* LISTAS -------- */
-.pedidos-list,
+.orders-list,
 .produtos-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.pedido-item,
+.order-item,
 .produto-item {
   background: #fafafa;
   border-radius: 10px;
@@ -314,27 +314,27 @@ onMounted(() => {
   transition: background .2s ease;
 }
 
-.pedido-item:hover,
+.order-item:hover,
 .produto-item:hover {
   background: #f2f2f2;
 }
 
-.pedido-info {
+.order-info {
   display: flex;
   flex-direction: column;
 }
 
-.pedido-numero {
+.order-numero {
   font-weight: 700;
   color: #222;
 }
 
-.pedido-produto {
+.order-produto {
   font-size: 0.9rem;
   color: #666;
 }
 
-.pedido-status {
+.order-status {
   font-size: 1.4rem;
 }
 
@@ -346,7 +346,7 @@ onMounted(() => {
   color: #28a745;
 }
 
-.produto-nome {
+.produto-name {
   font-size: 1rem;
   font-weight: 500;
   color: #222;

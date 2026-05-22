@@ -2,28 +2,28 @@ import { defineStore } from 'pinia';
 
 export const useCheckoutStore = defineStore('checkout', {
   state: () => ({
-    endereco: null,
-    pagamento: null,
-    pedido: null
+    address: null,
+    payment: null,
+    order: null
   }),
 
   actions: {
-    setEndereco(endereco) {
-      this.endereco = endereco;
+    setAddress(address) {
+      this.address = address;
     },
 
-    setPagamento(pagamento) {
-      this.pagamento = pagamento;
+    setPayment(payment) {
+      this.payment = payment;
     },
 
-    setPedido(pedido) {
-      this.pedido = pedido;
+    setOrder(order) {
+      this.order = order;
     },
 
-    limparCheckout() {
-      this.endereco = null;
-      this.pagamento = null;
-      this.pedido = null;
+    clearCheckout() {
+      this.address = null;
+      this.payment = null;
+      this.order = null;
     }
   },
 

@@ -71,7 +71,7 @@ const handleLogin = async () => {
     const user = await authService.login(email.value, password.value);
 
     if (!user?.email) {
-      throw new Error('Dados do usuário inválidos');
+      throw new Error('Data do usuário inválidos');
     }
 
     if (user.userRole === 'ADMIN') {

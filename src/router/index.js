@@ -1,31 +1,31 @@
-import ListaClientes from '@/components/admin/clientes/ListaClientes.vue'
-import DetalhesCliente from '@/components/admin/clientes/DetalhesCliente.vue'
+import ClientList from '@/components/admin/clients/ClientList.vue'
+import ClientDetails from '@/components/admin/clients/ClientDetails.vue'
 import Dashboard from '@/components/admin/Dashboard.vue'
-import Relatorios from '@/components/admin/Relatorios.vue'
-import ListaPedidos from '@/components/admin/pedidos/ListaPedidos.vue'
-import DetalhesPedido from '@/components/admin/pedidos/DetalhesPedido.vue'
-import CadastrarProduto from '@/components/admin/produtos/CadastrarProduto.vue'
-import ListaProdutos from '@/components/admin/produtos/ListaProdutos.vue'
+import Reports from '@/components/admin/Reports.vue'
+import OrderList from '@/components/admin/orders/OrderList.vue'
+import OrderDetails from '@/components/admin/orders/OrderDetails.vue'
+import CreateProduct from '@/components/admin/products/CreateProduct.vue'
+import ProductList from '@/components/admin/products/ProductList.vue'
 import Checkout from '@/components/checkout/Checkout.vue'
-import Confirmacao from '@/components/checkout/Confirmacao.vue'
-import Endereco from '@/components/checkout/Endereco.vue'
-import Pagamento from '@/components/checkout/Pagamento.vue'
-import Favoritos from '@/components/usuario/Favoritos.vue'
-import Meusdados from '@/components/usuario/Meusdados.vue'
-import MeusPedidos from '@/components/usuario/MeusPedidos.vue'
-import Catalogo from '@/views/Catalogo.vue'
-import Perfil from '@/views/Perfil.vue'
-import ProdutoDetalhes from '@/views/ProdutoDetalhes.vue'
-import Sacola from '@/views/Sacola.vue'
+import Confirmation from '@/components/checkout/Confirmation.vue'
+import Address from '@/components/checkout/Address.vue'
+import Payment from '@/components/checkout/Payment.vue'
+import Favorite from '@/components/user/Favorite.vue'
+import ProfileData from '@/components/user/ProfileData.vue'
+import MyOrders from '@/components/user/MyOrders.vue'
+import Catalog from '@/views/Catalog.vue'
+import Profile from '@/views/Profile.vue'
+import ProductDetails from '@/views/ProductDetails.vue'
+import Bag from '@/views/Bag.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
-import AtualizarProduto from '@/components/admin/produtos/AtualizarProduto.vue'
+import UpdateProduct from '@/components/admin/products/UpdateProduct.vue'
 import LayoutAdmin from '@/components/admin/LayoutAdmin.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 import { authService } from '@/services/authService'
-import { usuarioService } from '@/services/usuarioService'
+import { userService } from '@/services/userService'
 
 // Guard functions
 const authGuard = async (to, from, next) => {
@@ -44,8 +44,8 @@ const adminGuard = async (to, from, next) => {
   }
 
   try {
-    const usuario = await usuarioService.buscarPorId(user.id)
-    if (usuario.eAdmin === true) {
+    const user = await userService.findById(user.id)
+    if (user.role === "ADMIN") {
       return next()
     }
   } catch (error) {
@@ -59,27 +59,27 @@ const adminGuard = async (to, from, next) => {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'catalogo', component: Catalogo },
+    { path: '/', name: 'Catalog', component: Catalog },
     { path: '/login', name: 'login', component: Login },
     { path: '/register', name: 'register', component: Register },
     { path: '/reset-password', name: 'reset-password', component: ResetPassword },
-    { path: '/sacola', name: 'sacola', component: Sacola },
-    { path: '/produto/:id', name: 'produto-detalhes', component: ProdutoDetalhes, props: true },
+    { path: '/Bag', name: 'Bag', component: Bag },
+    { path: '/product/:id', name: 'product-details', component: ProductDetails, props: true },
 
     { 
-      path: '/perfil', name: 'perfil', component: Perfil, beforeEnter: authGuard,
+      path: '/Profile', name: 'Profile', component: Profile, beforeEnter: authGuard,
       children: [
-        { path: 'meus-dados', name: 'perfil-dados', component: Meusdados },
-        { path: 'meus-pedidos', name: 'perfil-pedidos', component: MeusPedidos },
-        { path: 'favoritos', name: 'perfil-favoritos', component: Favoritos }
+        { path: 'my-data', name: 'Profile-data', component: ProfileData },
+        { path: 'my-orders', name: 'Profile-orders', component: MyOrders },
+        { path: 'Favorite', name: 'Profile-Favorite', component: Favorite }
       ]
     },
     {
       path: '/checkout', name: 'checkout', component: Checkout, beforeEnter: authGuard,
       children: [
-        { path: 'endereco', name: 'checkout-endereco', component: Endereco },
-        { path: 'pagamento', name: 'checkout-pagamento', component: Pagamento },
-        { path: 'confirmacao', name: 'checkout-confirmacao', component: Confirmacao }
+        { path: 'Address', name: 'checkout-Address', component: Address },
+        { path: 'Payment', name: 'checkout-Payment', component: Payment },
+        { path: 'Confirmation', name: 'checkout-Confirmation', component: Confirmation }
       ]
     },
 
@@ -87,14 +87,14 @@ const router = createRouter({
       path: '/admin', name: 'admin', component: LayoutAdmin, beforeEnter: adminGuard,
       children: [
         { path: 'dashboard', name: 'dashboard', component: Dashboard },
-        { path: 'clientes', name: 'clientes', component: ListaClientes },
-        { path: 'clientes/:id', name: 'cliente-detalhes', component: DetalhesCliente },
-        { path: 'pedidos', name: 'pedidos', component: ListaPedidos },
-        { path: 'pedidos/:id', name: 'pedido-detalhes', component: DetalhesPedido },
-        { path: 'produtos', name: 'produtos', component: ListaProdutos },
-        { path: 'produtos/cadastrar', name: 'produto-cadastrar', component: CadastrarProduto },
-        { path: 'produtos/atualizar/:id', name: 'produto-atualizar', component: AtualizarProduto },
-        { path: 'relatorios', name: 'relatorios', component: Relatorios }
+        { path: 'clients', name: 'clients', component: ClientList },
+        { path: 'clients/:id', name: 'client-details', component: ClientDetails },
+        { path: 'orders', name: 'orders', component: OrderList },
+        { path: 'order/:id', name: 'order-details', component: OrderDetails },
+        { path: 'products', name: 'products', component: ProductList },
+        { path: 'products/create', name: 'product-create', component: CreateProduct },
+        { path: 'products/update/:id', name: 'product-update', component: UpdateProduct },
+        { path: 'Reports', name: 'Reports', component: Reports }
       ]
     }
   ]
@@ -109,8 +109,8 @@ router.beforeEach(async (to, from, next) => {
 
   if (user) {
     try {
-      const usuario = await usuarioService.buscarPorId(user.id)
-      if (usuario.eAdmin === true && !to.path.startsWith('/admin')) {
+      const user = await userService.findById(user.id)
+      if (user.role === "ADMIN" && !to.path.startsWith('/admin')) {
         return next('/admin')
       }
     } catch (error) {

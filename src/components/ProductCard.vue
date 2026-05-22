@@ -2,20 +2,20 @@
   <div class="product-card">
     <router-link :to="`/produto/${produto.id}`" class="product-link">
       <div class="product-image">
-        <img :src="produto.imagens[0].url" :alt="produto.nome" />
+        <img :src="produto.imagens[0].url" :alt="produto.name" />
       </div>
       <div class="product-info">
-        <h3 class="product-name">{{ produto.nome }}</h3>
+        <h3 class="product-name">{{ produto.name }}</h3>
         <p class="product-category">{{ produto.categoria }}</p>
         <p class="product-price">R$ {{ formatarPreco(produto.preco) }}</p>
       </div>
     </router-link>
     <div class="product-actions">
-      <button class="btn-favorite" @click="toggleFavorito">
+      <button class="btn-favorite" @click="toggleFavorite">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path :d="mdiHeart"/>
         </svg>
-        {{ isFavorito ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
+        {{ isFavorite ? 'Remover dos Favorites' : 'Adicionar aos Favorites' }}
       </button>
       <button class="btn-add-cart" @click="adicionarNaSacola">
         Adicionar à Sacola
@@ -25,8 +25,8 @@
 </template>
 
 <script setup>
-import { useSacolaStore } from '../stores/sacolaStore';
-import { useFavoritosStore } from '../stores/favoritosStore';
+import { useSacolaStore } from '../stores/bagStore';
+import { useFavoritesStore } from '../stores/favoriteStore';
 import { computed } from 'vue';
 import { mdiHeart } from '@mdi/js';
 
@@ -38,9 +38,9 @@ const props = defineProps({
 });
 
 const sacolaStore = useSacolaStore();
-const favoritosStore = useFavoritosStore();
+const favoritesStore = useFavoritesStore();
 
-const isFavorito = computed(() => favoritosStore.isFavorito(props.produto.id));
+const isFavorite = computed(() => favoritesStore.isFavorite(props.produto.id));
 
 const formatarPreco = (preco) => {
   return preco.toFixed(2).replace('.', ',');
@@ -50,15 +50,15 @@ const adicionarNaSacola = () => {
   sacolaStore.adicionarItem(props.produto);
 };
 
-const toggleFavorito = async () => {
+const toggleFavorite = async () => {
   try {
-    if (isFavorito.value) {
-      await favoritosStore.removerFavorito(props.produto.id);
+    if (isFavorite.value) {
+      await favoritesStore.removerFavorite(props.produto.id);
     } else {
-      await favoritosStore.adicionarFavorito(props.produto);
+      await favoritesStore.adicionarFavorite(props.produto);
     }
   } catch (error) {
-    console.error('Erro ao gerenciar favorito:', error);
+    console.error('Erro ao gerenciar favorite:', error);
   }
 };
 </script>

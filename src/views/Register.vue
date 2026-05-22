@@ -4,10 +4,10 @@
       <h2>Cadastrar-se</h2>
       <form @submit.prevent="handleRegister">
         <div class="form-group">
-          <label for="displayName">Nome:</label>
+          <label for="displayName">Name:</label>
           <input type="text" id="displayName" v-model="displayName" :class="{ 'is-invalid': v$.displayName.$error }"
             @blur="v$.displayName.$touch()"
-            placeholder="Digite seu nome" />
+            placeholder="Digite seu name" />
           <div v-if="v$.displayName.$error" class="error-message">
             <div v-for="error in v$.displayName.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>

@@ -1,16 +1,16 @@
-import axiosInstance from "./api"; // seu cliente axios
+import axiosInstance from "./api"; // seu client axios
 
 export const authService = {
   /**
    * Registrar novo usuário
    * O backend retorna um UserResponseDTO
    */
-  async registrar(displayName, email, telefone, password) {
+  async register(displayName, email, phone, password) {
     try {
       const response = await axiosInstance.post('/users', {
         name: displayName,
         email,
-        phone: telefone,
+        phone: phone,
         password
       });
 

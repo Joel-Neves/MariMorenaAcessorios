@@ -19,11 +19,11 @@
           <router-link to="/admin/produtos" class="nav-link">
             <i class="fas fa-box"></i> Produtos
           </router-link>
-          <router-link to="/admin/pedidos" class="nav-link">
-            <i class="fas fa-receipt"></i> Pedidos
+          <router-link to="/admin/orders" class="nav-link">
+            <i class="fas fa-receipt"></i> Orders
           </router-link>
-          <router-link to="/admin/clientes" class="nav-link">
-            <i class="fas fa-users"></i> Clientes
+          <router-link to="/admin/clients" class="nav-link">
+            <i class="fas fa-users"></i> Clients
           </router-link>
         </div>
 
@@ -45,8 +45,8 @@
           <h2>Painel Administrativo</h2>
         </div>
         <div class="navbar-profile">
-          <span>Olá, {{ usuario.displayName }}</span>
-          <img :src="usuario?.photoURL || '/default-avatar.png'" alt="Foto do Usuário" class="profile-avatar" />
+          <span>Olá, {{ user.displayName }}</span>
+          <img :src="user?.photoURL || '/default-avatar.png'" alt="Foto do Usuário" class="profile-avatar" />
         </div>
       </header>
       <div class="content-area">
@@ -60,7 +60,7 @@
 import { useRouter } from 'vue-router'
 import { authService } from '@/services/authService'
 
-const usuario = authService.getCurrentUser()
+const user = authService.getCurrentUser()
 
 const router = useRouter()
 
