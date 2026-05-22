@@ -31,12 +31,12 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="telefone">Telefone:</label>
-          <input type="tel" id="telefone" v-model="telefone" :class="{ 'is-invalid': v$.telefone.$error }"
-          @blur="v$.telefone.$touch()"  
-          placeholder="Digite seu telefone" />
-          <div v-if="v$.telefone.$error" class="error-message">
-            <div v-for="error in v$.telefone.$errors" :key="error.$uid">{{ error.$message }}</div>
+          <label for="phone">Telefone:</label>
+          <input type="tel" id="phone" v-model="phone" :class="{ 'is-invalid': v$.phone.$error }"
+          @blur="v$.phone.$touch()"  
+          placeholder="Digite seu phone" />
+          <div v-if="v$.phone.$error" class="error-message">
+            <div v-for="error in v$.phone.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>
         </div>
         <button type="submit" :disabled="loading" class="btn-register">
@@ -62,7 +62,7 @@ const router = useRouter();
 const name = ref('');
 const email = ref('');
 const password = ref('');
-const telefone = ref('');
+const phone = ref('');
 const loading = ref(false);
 const error = ref('');
 
@@ -75,10 +75,10 @@ const rules = {
     hasUpper: helpers.regex(/(?=.*[A-Z])/),
     hasNumber: helpers.regex(/(?=.*[0-9])/)
   },
-  telefone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
+  phone: { required, numeric, minLength: minLength(10), maxLength: maxLength(15) }
 };
 
-const v$ = useVuelidate(rules, { name, email, password, telefone });
+const v$ = useVuelidate(rules, { name, email, password, phone });
 
 const handleRegister = async () => {
   const isFormCorrect = await v$.value.$validate();
@@ -91,7 +91,7 @@ const handleRegister = async () => {
     await authService.registrar(
       name.value,
       email.value,
-      telefone.value,
+      phone.value,
       password.value
     );
 

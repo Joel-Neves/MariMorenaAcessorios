@@ -19,7 +19,7 @@
           <span>{{ cliente.email }}</span>
 
           <strong>Telefone</strong>
-          <span>{{ cliente.telefone || 'N/A' }}</span>
+          <span>{{ cliente.phone || 'N/A' }}</span>
 
           <strong>Endereço</strong>
           <span>{{ enderecoFormatado }}</span>

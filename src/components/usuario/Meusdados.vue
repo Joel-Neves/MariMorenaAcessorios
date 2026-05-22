@@ -12,8 +12,8 @@
         <small class="readonly-note">O email não pode ser alterado.</small>
       </div>
       <div class="form-group">
-        <label for="telefone">Telefone:</label>
-        <input type="tel" id="telefone" v-model="userData.phone" placeholder="Digite seu telefone" />
+        <label for="phone">Telefone:</label>
+        <input type="tel" id="phone" v-model="userData.phone" placeholder="Digite seu phone" />
       </div>
       <h3>Endereço</h3>
       <div class="form-group">

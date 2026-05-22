@@ -19,7 +19,7 @@
           <tr v-for="cliente in clientes" :key="cliente.id">
             <td>{{ cliente.nome }}</td>
             <td>{{ cliente.email }}</td>
-            <td>{{ cliente.telefone || 'N/A' }}</td>
+            <td>{{ cliente.phone || 'N/A' }}</td>
             <td>{{ cliente.ultimaCompra || 'N/A' }}</td>
             <td>{{ cliente.valorTotal }}</td>
             <td>

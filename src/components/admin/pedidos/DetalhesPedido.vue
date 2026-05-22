@@ -45,7 +45,7 @@
             <h4>Contato</h4>
             <p><strong>Nome:</strong> {{ cliente?.nome || 'N/A' }}</p>
             <p><strong>Email:</strong> {{ cliente?.email || 'N/A' }}</p>
-            <p><strong>Telefone:</strong> {{ cliente?.telefone || 'N/A' }}</p>
+            <p><strong>Telefone:</strong> {{ cliente?.phone || 'N/A' }}</p>
           </div>
           <div class="client-column">
             <h4>Endereço</h4>
