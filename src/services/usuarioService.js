@@ -23,25 +23,6 @@ export const usuarioService = {
     }
   },
 
-  async buscarPorEmail(email) {
-    try {
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      const role = currentUser?.role || 'CONSUMER';
-      
-      if (role === 'ADMIN') {
-        return await axiosInstance.get(`/admins/email/${email}`);
-      }
-      return await axiosInstance.get(`/clients/email/${email}`);
-    } catch (error) {
-      console.error('Erro ao buscar usuário por email:', error);
-      throw new Error('Não foi possível buscar o usuário');
-    }
-  },
-
   async criar(usuario) {
     try {
       return await axiosInstance.post('/clients', usuario);

@@ -7,7 +7,7 @@ export const authService = {
    */
   async registrar(name, email, phone, password) {
     try {
-      const response = await axiosInstance.post('/users', {
+      const response = await axiosInstance.post('/clients', {
         name: name,
         email,
         phone: phone,

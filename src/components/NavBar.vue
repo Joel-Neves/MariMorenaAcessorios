@@ -61,13 +61,14 @@ function isAdmin(){
 
 onMounted(async () => {
   try {
-    const currentUser = authService.isAuthenticated();
-    if (currentUser) {
-      eAutenticado.value = true;
-      usuario.value = await usuarioService.buscarPorEmail(currentUser.email);
+    eAutenticado.value = await authService.waitForUser();
+    if (eAutenticado.value) {
+      const user = authService.getCurrentUser();
+      const response = await usuarioService.buscarPorId(user.id);
+      usuario.value = response.data;
     }
   } catch (error) {
-    console.error('Erro ao buscar dados do usuário:', error);
+    console.error('Erro ao obter usuário:', error);
   }
 });
 
