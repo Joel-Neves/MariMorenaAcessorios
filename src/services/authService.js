@@ -45,8 +45,9 @@ export const authService = {
 
       // Armazene o usuário logado
       localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Não precisa chamar /me agora!
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
       return user;
     } catch (error) {
       throw new Error(error?.response?.data?.message || error?.message);
@@ -61,7 +62,9 @@ export const authService = {
     try {
       await axiosInstance.post('/auth/logout');
       localStorage.removeItem('currentUser');
-      location.reload(); // Força recarregar para limpar estado
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       throw error;

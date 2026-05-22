@@ -60,7 +60,14 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'catalogo', component: Catalogo },
-    { path: '/login', name: 'login', component: Login },
+    { path: '/login', name: 'login', component: Login, beforeEnter: async (to, from, next) => {
+      if (await authService.waitForUser()) {
+        next('/')
+      } else {
+        next()
+      }
+    } 
+  },
     { path: '/register', name: 'register', component: Register },
     { path: '/reset-password', name: 'reset-password', component: ResetPassword },
     { path: '/sacola', name: 'sacola', component: Sacola },
