@@ -11,18 +11,18 @@
             <path :d="mdiHome" />
           </svg>
         </router-link>
-        <router-link to="/sacola" class="nav-link cart-link">
+        <router-link to="/bag" class="nav-link cart-link">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path :d="mdiShopping" />
           </svg>
-          <span v-if="totalItens > 0" class="cart-badge">{{ totalItens }}</span>
+          <span v-if="itemTotal > 0" class="cart-badge">{{ itemTotal }}</span>
         </router-link>
         <router-link to="/perfil/favorites" class="nav-link">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path :d="mdiHeart" />
           </svg>
         </router-link>
-        <router-link v-if="eAutenticado" to="/perfil/my-data" class="nav-link">
+        <router-link v-if="isAuthenticated" to="/perfil/my-data" class="nav-link">
           <img :src="user?.photoURL || AvatarDefault" alt="Foto do Usuário" class="user-avatar" />
         </router-link>
         <div v-else class="dropdown">
@@ -43,17 +43,17 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { useSacolaStore } from '../stores/bagStore';
+import { useBagStore } from '../stores/bagStore';
 import { authService } from '@/services/authService';
 import { userService } from '@/services/userService';
 import { mdiAccountCircle, mdiHeart, mdiHome, mdiShopping } from '@mdi/js';
 import AvatarDefault from '@/assets/default-avatar.png';
 
-const sacolaStore = useSacolaStore();
-const totalItens = computed(() => sacolaStore.totalItens);
+const bagStore = useBagStore();
+const itemTotal = computed(() => bagStore.itemTotal);
 const dropdownOpen = ref(false);
 const user = ref(null);
-const eAutenticado = ref(false);
+const isAuthenticated = ref(false);
 
 function isAdmin(){
   return user.value?.role === 'ADMIN';
@@ -63,8 +63,8 @@ onMounted(async () => {
   try {
     const currentUser = authService.isAuthenticated();
     if (currentUser) {
-      eAutenticado.value = true;
-      user.value = await userService.buscarPorEmail(currentUser.email);
+      isAuthenticated.value = true;
+      user.value = await userService.findByEmail(currentUser.email);
     }
   } catch (error) {
     console.error('Erro ao buscar data do usuário:', error);

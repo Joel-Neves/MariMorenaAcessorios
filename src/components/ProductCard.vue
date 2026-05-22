@@ -1,13 +1,13 @@
 <template>
   <div class="product-card">
-    <router-link :to="`/produto/${produto.id}`" class="product-link">
+    <router-link :to="`/product/${product.id}`" class="product-link">
       <div class="product-image">
-        <img :src="produto.imagens[0].url" :alt="produto.name" />
+        <img :src="product.imagens[0].url" :alt="product.name" />
       </div>
       <div class="product-info">
-        <h3 class="product-name">{{ produto.name }}</h3>
-        <p class="product-category">{{ produto.categoria }}</p>
-        <p class="product-price">R$ {{ formatarPreco(produto.preco) }}</p>
+        <h3 class="product-name">{{ product.name }}</h3>
+        <p class="product-category">{{ product.category }}</p>
+        <p class="product-price">R$ {{ formatPrice(product.price) }}</p>
       </div>
     </router-link>
     <div class="product-actions">
@@ -17,7 +17,7 @@
         </svg>
         {{ isFavorite ? 'Remover dos Favorites' : 'Adicionar aos Favorites' }}
       </button>
-      <button class="btn-add-cart" @click="adicionarNaSacola">
+      <button class="btn-add-cart" @click="addToBag">
         Adicionar à Sacola
       </button>
     </div>
@@ -25,37 +25,37 @@
 </template>
 
 <script setup>
-import { useSacolaStore } from '../stores/bagStore';
-import { useFavoritesStore } from '../stores/favoriteStore';
+import { useBagStore } from '../stores/bagStore';
+import { useFavoriteStore } from '../stores/favoriteStore';
 import { computed } from 'vue';
 import { mdiHeart } from '@mdi/js';
 
 const props = defineProps({
-  produto: {
+  product: {
     type: Object,
     required: true
   }
 });
 
-const sacolaStore = useSacolaStore();
-const favoritesStore = useFavoritesStore();
+const bagStore = useBagStore();
+const favoriteStore = useFavoriteStore();
 
-const isFavorite = computed(() => favoritesStore.isFavorite(props.produto.id));
+const isFavorite = computed(() => favoriteStore.isFavorite(props.product.id));
 
-const formatarPreco = (preco) => {
+const formatPrice = (preco) => {
   return preco.toFixed(2).replace('.', ',');
 };
 
-const adicionarNaSacola = () => {
-  sacolaStore.adicionarItem(props.produto);
+const addToBag = () => {
+  bagStore.addItem(props.product);
 };
 
 const toggleFavorite = async () => {
   try {
     if (isFavorite.value) {
-      await favoritesStore.removerFavorite(props.produto.id);
+      await favoriteStore.removeFavorite(props.product.id);
     } else {
-      await favoritesStore.adicionarFavorite(props.produto);
+      await favoriteStore.adicionarFavorite(props.product);
     }
   } catch (error) {
     console.error('Erro ao gerenciar favorite:', error);
