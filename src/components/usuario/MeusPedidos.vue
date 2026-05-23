@@ -110,14 +110,12 @@ onMounted(async () => {
 
 const carregarPedidos = async () => {
   const currentUser = authService.getCurrentUser();
-  console.log('Current user:', currentUser);
   if (!currentUser) return;
 
   loading.value = true;
 
   try {
     const userPedidos = await pedidoService.buscarPorUsuario(currentUser.id);
-    console.log('User pedidos:', userPedidos);
 
     userPedidos.forEach(pedido => {
       pedido.itens = Array.isArray(pedido.itens)
