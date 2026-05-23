@@ -95,7 +95,6 @@ const handleRegister = async () => {
       password.value
     );
 
-    router.push('/login'); // ou redirecionar para dashboard se auto-login
   } catch (err) {
     error.value = err.message;
   } finally {

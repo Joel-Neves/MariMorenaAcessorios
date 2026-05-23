@@ -22,6 +22,9 @@ export const authService = {
       }
 
       localStorage.setItem('currentUser', JSON.stringify(user));
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
       return user;
     } catch (error) {
       const msg = error?.response?.data?.message || error?.message || 'Erro ao registrar';
@@ -50,6 +53,9 @@ export const authService = {
       }, 500);
       return user;
     } catch (error) {
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 500);
       throw new Error(error?.response?.data?.message || error?.message);
     }
   },
