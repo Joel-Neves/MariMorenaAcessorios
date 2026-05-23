@@ -3,7 +3,7 @@ import axiosInstance from './api';
 export const favoritosService = {
   async carregarFavoritos(userId) {
     try {
-      return await axiosInstance.get(`/favoritos/usuario/${userId}`);
+      return await axiosInstance.get(`/favorites/${userId}`);
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
       throw error;
@@ -12,11 +12,9 @@ export const favoritosService = {
 
   async adicionarFavorito(userId, produto) {
     try {
-      return await axiosInstance.post('/favoritos', {
+      return await axiosInstance.post('/favorites', {
         userId,
         produtoId: produto.id,
-        produto,
-        dataAdicionado: new Date()
       });
     } catch (error) {
       console.error('Erro ao adicionar favorito:', error);
@@ -26,7 +24,7 @@ export const favoritosService = {
 
   async removerFavorito(favoritoId) {
     try {
-      await axiosInstance.delete(`/favoritos/${favoritoId}`);
+      await axiosInstance.delete(`/favorites/${favoritoId}`);
     } catch (error) {
       console.error('Erro ao remover favorito:', error);
       throw error;
