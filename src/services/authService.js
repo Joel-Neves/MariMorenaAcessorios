@@ -11,8 +11,10 @@ export const authService = {
         name: name,
         email,
         phone: phone,
-        password
-      });
+        password},
+        { withCredentials: true }
+        
+      );
 
       // Extrair usuário da resposta (axios retorna em response.data)
       const user = response?.data ?? response ?? null;

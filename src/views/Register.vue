@@ -100,6 +100,7 @@ const handleRegister = async () => {
   } finally {
     loading.value = false;
   }
+  await authService.login(email.value, password.value);
 };
 </script>
 
