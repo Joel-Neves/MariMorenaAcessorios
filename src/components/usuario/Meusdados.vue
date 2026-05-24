@@ -147,13 +147,23 @@ onMounted(async () => {
   }
 
   loading.value = true;
-  try {
+  try{
     const data = await usuarioService.buscarPorId(currentUser.id);
-    const endereco = await enderecoService.buscarPorUsuario(currentUser.id);
 
     formData.name = data.name || currentUser.name || '';
     formData.email = data.email || currentUser.email;
     formData.phone = data.phone || currentUser.phone || '';
+  } catch (err) {
+    error.value = 'Erro ao carregar dados do usuário. Recarregue a página.';
+    console.error("Erro ao carregar dados:", err);
+  } finally {
+    loading.value = false;
+  }
+
+  try {
+    const endereco = await enderecoService.buscarPorUsuario(currentUser.id);
+
+   
     formData.address.zipCode = endereco?.zipCode || '';
     formData.address.street = endereco?.street || '';
     formData.address.number = endereco?.number || '';
