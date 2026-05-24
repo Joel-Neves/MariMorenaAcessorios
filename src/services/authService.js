@@ -38,10 +38,11 @@ export const authService = {
    */
   async login(email, password) {
     try {
-      const response = await axiosInstance.post('/auth/login', {
-        email,
-        password
-      });
+      const response = await axiosInstance.post(
+        '/auth/login',
+        { email, password },
+        { withCredentials: true }
+      );
 
       const user = response?.data?.user ?? null;
       if (!user) throw new Error('Usuário não retornado');
@@ -107,23 +108,23 @@ export const authService = {
     return new Promise((resolve) => {
       const start = Date.now();
       const timeout = 1000;
-  
+
       const checkUser = () => {
         const user = this.getCurrentUser();
-  
+
         if (user) {
           resolve(user);
           return;
         }
-  
+
         if (Date.now() - start >= timeout) {
           resolve(null);
           return;
         }
-  
+
         setTimeout(checkUser, 100);
       };
-  
+
       checkUser();
     });
   },

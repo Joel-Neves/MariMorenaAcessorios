@@ -3,7 +3,8 @@ import axiosInstance from './api';
 export const favoritosService = {
   async carregarFavoritos(userId) {
     try {
-      return await axiosInstance.get(`/favorites/${userId}`);
+      const response = await axiosInstance.get(`/favorites/${userId}`);
+      return response.data;
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
       throw error;
