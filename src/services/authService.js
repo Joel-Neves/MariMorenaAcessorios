@@ -102,31 +102,19 @@ export const authService = {
   },
 
   /**
-   * Espera pelo usuário armazenado no localStorage (útil em guards)
+   * Espera pelo usuário 
    */
   async waitForUser() {
-    return new Promise((resolve) => {
-      const start = Date.now();
-      const timeout = 1000;
+    const user = this.getCurrentUser();
+    if (!user) return null;
 
-      const checkUser = () => {
-        const user = this.getCurrentUser();
-
-        if (user) {
-          resolve(user);
-          return;
-        }
-
-        if (Date.now() - start >= timeout) {
-          resolve(null);
-          return;
-        }
-
-        setTimeout(checkUser, 100);
-      };
-
-      checkUser();
-    });
+    try {
+      const verifiedUser = await this.verifyAuth();
+      return verifiedUser;
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      return null;
+    }
   },
 
   /**
@@ -139,8 +127,8 @@ export const authService = {
       const user = response?.data ?? response ?? null;
       if (user) {
         localStorage.setItem('currentUser', JSON.stringify(user));
+        return user;
       }
-      return user;
     } catch (error) {
       localStorage.removeItem('currentUser');
       throw error;
