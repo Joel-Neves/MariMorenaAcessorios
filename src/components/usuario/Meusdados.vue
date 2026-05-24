@@ -1,54 +1,54 @@
 <template>
   <div class="meus-dados">
     <h2>Meus Dados</h2>
-    <form @submit.prevent="salvarDados" v-if="userData" class="dados-form">
+    <form @submit.prevent="salvarDados" v-if="formData" class="dados-form">
       <div class="form-group">
         <label for="nome">Nome:</label>
-        <input type="text" id="nome" v-model="userData.name" required placeholder="Digite seu nome" />
+        <input type="text" id="nome" v-model="formData.name" required placeholder="Digite seu nome" />
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="userData.email" disabled readonly />
+        <input type="email" id="email" v-model="formData.email" disabled readonly />
         <small class="readonly-note">O email não pode ser alterado.</small>
       </div>
       <div class="form-group">
         <label for="phone">Telefone:</label>
-        <input type="tel" id="phone" v-model="userData.phone" placeholder="Digite seu phone" />
+        <input type="tel" id="phone" v-model="formData.phone" placeholder="Digite seu phone" />
       </div>
       <h3>Endereço</h3>
       <div class="form-group">
-        <label for="cep">CEP:</label>
-          <input type="text" id="cep" v-model="userData.address.zipCode" @input="buscarCep" maxlength="8" />
+        <label for="zipCode">CEP:</label>
+          <input type="text" id="zipCode" v-model="formData.address.zipCode" @input="buscarCep" maxlength="8" />
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="rua">Rua:</label>
-          <input type="text" id="rua" v-model="userData.address.street" placeholder="Nome da rua" />
+          <label for="street">Rua:</label>
+          <input type="text" id="street" v-model="formData.address.street" placeholder="Nome da rua" />
         </div>
         <div class="form-group">
-          <label for="numero">Número:</label>
-          <input type="text" id="numero" v-model="userData.address.number" placeholder="123" />
+          <label for="number">Número:</label>
+          <input type="text" id="number" v-model="formData.address.number" placeholder="123" />
         </div>
       </div>
       <div class="form-group">
-        <label for="complemento">Complemento:</label>
-        <input type="text" id="complemento" v-model="userData.address.complement"
+        <label for="complement">Complemento:</label>
+        <input type="text" id="complement" v-model="formData.address.complement"
           placeholder="Apartamento, bloco, etc." />
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="bairro">Bairro:</label>
-          <input type="text" id="bairro" v-model="userData.address.neighborhood" placeholder="Nome do bairro" />
+          <label for="neighborhood">Bairro:</label>
+          <input type="text" id="neighborhood" v-model="formData.address.neighborhood" placeholder="Nome do bairro" />
         </div>
         <div class="form-group">
-          <label for="cidade">Cidade:</label>
-          <input type="text" id="cidade" v-model="userData.address.city" placeholder="Nome da cidade" />
+          <label for="city">Cidade:</label>
+          <input type="text" id="city" v-model="formData.address.city" placeholder="Nome da cidade" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="estado">Estado:</label>
-          <select id="estado" v-model="userData.address.state">
+          <label for="state">Estado:</label>
+          <select id="state" v-model="formData.address.state">
             <option value="">Selecione</option>
             <option value="AC">Acre</option>
             <option value="AL">Alagoas</option>
@@ -80,8 +80,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="pais">País:</label>
-          <input type="text" id="pais" v-model="userData.address.country" value="Brasil" readonly />
+          <label for="country">País:</label>
+          <input type="text" id="country" v-model="formData.address.country" value="Brasil" readonly />
         </div>
       </div>
       <button type="submit" :disabled="loading" class="btn-salvar">
@@ -96,14 +96,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, numeric, minLength, maxLength } from '@vuelidate/validators';
 import { authService } from '@/services/authService';
 import { usuarioService } from '@/services/usuarioService';
+import { enderecoService } from '@/services/enderecoService';
 import { buscarEnderecoViaCep } from '@/services/cepService';
 
-const userData = ref({
+const formData = reactive({
   name: '',
   email: '',
   phone: '',
@@ -115,13 +116,13 @@ const userData = ref({
     neighborhood: '',
     city: '',
     state: '',
-    country: 'Brasil' 
+    country: 'Brasil'
   }
 });
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
-const cepTimeout = ref(null); 
+const cepTimeout = ref(null);
 
 const rules = computed(() => ({
   name: { required, minLength: minLength(8), maxLength: maxLength(100) },
@@ -136,7 +137,7 @@ const rules = computed(() => ({
   }
 }));
 
-const v$ = useVuelidate(rules, userData);
+const v$ = useVuelidate(rules, formData);
 
 onMounted(async () => {
   const currentUser = authService.getCurrentUser();
@@ -148,18 +149,19 @@ onMounted(async () => {
   loading.value = true;
   try {
     const data = await usuarioService.buscarPorId(currentUser.id);
+    const endereco = await enderecoService.buscarPorUsuario(currentUser.id);
 
-    userData.value = {
-      ...userData.value, 
-      ...data,
-      email: data.email || currentUser.email,
-      name: data.name || currentUser.name || '',
-      phone: data.phone || currentUser.phone || '',
-      address: {
-        ...userData.value.address,
-        ...data.address
-      }
-    };
+    formData.name = data.name || currentUser.name || '';
+    formData.email = data.email || currentUser.email;
+    formData.phone = data.phone || currentUser.phone || '';
+    formData.address.zipCode = endereco?.zipCode || '';
+    formData.address.street = endereco?.street || '';
+    formData.address.number = endereco?.number || '';
+    formData.address.complement = endereco?.complement || '';
+    formData.address.neighborhood = endereco?.neighborhood || '';
+    formData.address.city = endereco?.city || '';
+    formData.address.state = endereco?.state || '';
+
 
   } catch (err) {
     error.value = 'Erro ao carregar dados do usuário. Recarregue a página.';
@@ -172,8 +174,8 @@ onMounted(async () => {
 const buscarCep = () => {
   clearTimeout(cepTimeout.value);
 
-  let cepLimpo = userData.value.address.zipCode.replace(/\D/g, '');
-  userData.value.address.zipCode = cepLimpo;
+  let cepLimpo = formData.address.zipCode.replace(/\D/g, '');
+  formData.address.zipCode = cepLimpo;
 
   if (cepLimpo.length === 8) {
     cepTimeout.value = setTimeout(async () => {
@@ -182,16 +184,16 @@ const buscarCep = () => {
         loading.value = true;
         const endereco = await buscarEnderecoViaCep(cepLimpo);
 
-        userData.value.address.street = endereco.logradouro;
-        userData.value.address.neighborhood = endereco.bairro;
-        userData.value.address.city = endereco.localidade; 
-        userData.value.address.state = endereco.uf;
+        formData.address.street = endereco.street;
+        formData.address.neighborhood = endereco.neighborhood;
+        formData.address.city = endereco.city;
+        formData.address.state = endereco.state;
 
       } catch (err) {
-        userData.value.address.street = '';
-        userData.value.address.neighborhood = '';
-        userData.value.address.city = '';
-        userData.value.address.state = '';
+        formData.address.street = '';
+        formData.address.neighborhood = '';
+        formData.address.city = '';
+        formData.address.state = '';
         error.value = 'CEP não encontrado ou inválido.';
       } finally {
         loading.value = false;
@@ -210,19 +212,51 @@ const salvarDados = async () => {
   const currentUser = authService.getCurrentUser();
   if (!currentUser) return;
 
+
   loading.value = true;
   error.value = '';
   success.value = '';
 
+  let enderecoExistente = null;
+  try {
+    enderecoExistente = await enderecoService.buscarPorUsuario(currentUser.id);
+  } catch (err) {
+    if (err.response && err.response.status !== 404) {
+      error.value = 'Erro ao verificar endereço existente. Tente novamente.';
+      console.error("Erro ao verificar endereço:", err);
+      loading.value = false;
+      return;
+    }
+  }
+
   try {
 
     const updatedData = {
-      name: userData.value.name,
-      phone: userData.value.phone,
-      address: userData.value.address
+      name: formData.name,
+      phone: formData.phone,
     };
-
     await usuarioService.atualizar(currentUser.id, updatedData);
+
+    
+    const enderecoData = {
+      zipCode: formData.address.zipCode,
+      street: formData.address.street,
+      number: formData.address.number,
+      complement: formData.address.complement,
+      neighborhood: formData.address.neighborhood,
+      city: formData.address.city,
+      state: formData.address.state,
+      country: formData.address.country,
+      clientId: currentUser.id
+    };
+    
+    if (enderecoExistente){
+      await enderecoService.atualizar(enderecoExistente.id, enderecoData);
+    } else {
+      await enderecoService.criar(enderecoData);
+    }
+    
+
 
     success.value = 'Dados atualizados com sucesso!';
 
