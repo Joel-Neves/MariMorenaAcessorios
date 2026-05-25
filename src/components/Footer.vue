@@ -37,7 +37,7 @@ const usuario = ref(null);
 const eAutenticado = ref(false);
 
 function isAdmin(){
-  return usuario.value?.eAdmin === true;
+  return usuario.value?.userRole === 'ADMIN';
 }
 
 onMounted(async () => {

@@ -56,16 +56,15 @@ const usuario = ref(null);
 const eAutenticado = ref(false);
 
 function isAdmin(){
-  return usuario.value?.role === 'ADMIN';
+  return usuario.value?.userRole === 'ADMIN';
 }
 
 onMounted(async () => {
   try {
-    eAutenticado.value = await authService.waitForUser();
+    eAutenticado.value = !!(await authService.waitForUser());
     if (eAutenticado.value) {
       const user = authService.getCurrentUser();
-      const response = await usuarioService.buscarPorId(user.id);
-      usuario.value = response.data;
+      usuario.value = await usuarioService.buscarPorId(user.id);
     }
   } catch (error) {
     console.error('Erro ao obter usuário:', error);

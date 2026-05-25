@@ -145,6 +145,10 @@ export const authService = {
       return user;
     } catch (error) {
       localStorage.removeItem('currentUser');
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        return null;
+      }
       throw error;
     }
   }

@@ -16,7 +16,8 @@ export const usuarioService = {
       if (!id) {
         throw new Error('ID do usuário não fornecido');
       }
-      return await axiosInstance.get(`/users/${id}`);
+      const response = await axiosInstance.get(`/users/${id}`);
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar por ID do usuário:', error);
       throw error;

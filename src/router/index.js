@@ -37,15 +37,15 @@ const authGuard = async (to, from, next) => {
 }
 
 const adminGuard = async (to, from, next) => {
-  const user = await authService.getCurrentUser()
-
-  if (!user) {
-    return next('/login')
-  }
-
   try {
-    const usuario = await usuarioService.buscarPorId(user.id)
-    if (usuario.role === "ADMIN") {
+    const user = await authService.verifyAuth()
+    if (!user) {
+      return next('/login')
+    }
+
+    const response = await usuarioService.buscarPorId(user.id)
+    const usuario = response?.data ?? response
+    if (usuario.userRole === 'ADMIN') {
       return next()
     }
   } catch (error) {
@@ -112,12 +112,20 @@ const router = createRouter({
 
 // Global guard to restrict admin users to admin routes only
 router.beforeEach(async (to, from, next) => {
-  const user = await authService.waitForUser()
+  let user = null
+
+  try {
+    user = await authService.verifyAuth()
+  } catch (error) {
+    console.error('Erro ao verificar autenticação:', error)
+    return next()
+  }
 
   if (user) {
     try {
-      const usuario = await usuarioService.buscarPorId(user.id)
-      if (usuario.eAdmin === true && !to.path.startsWith('/admin')) {
+      const response = await usuarioService.buscarPorId(user.id)
+      const usuario = response?.data ?? response
+      if (usuario.userRole === 'ADMIN' && !to.path.startsWith('/admin')) {
         return next('/admin')
       }
     } catch (error) {
