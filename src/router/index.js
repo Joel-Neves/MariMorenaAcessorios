@@ -45,7 +45,7 @@ const adminGuard = async (to, from, next) => {
 
   try {
     const usuario = await usuarioService.buscarPorId(user.id)
-    if (usuario.eAdmin === true) {
+    if (usuario.role === "ADMIN") {
       return next()
     }
   } catch (error) {
