@@ -4,7 +4,7 @@
     <form @submit.prevent="salvarDados" v-if="formData" class="dados-form">
       <div class="form-group">
         <label for="nome">Nome:</label>
-        <input type="text" id="nome" v-model="formData.name" required placeholder="Digite seu nome" />
+        <input type="text" id="nome" v-model="formData.name" required placeholder="Digite seu nome" maxlength="50" />
       </div>
       <div class="form-group">
         <label for="email">Email:</label>
@@ -13,7 +13,7 @@
       </div>
       <div class="form-group">
         <label for="phone">Telefone:</label>
-        <input type="tel" id="phone" v-model="formData.phone" placeholder="Digite seu phone" />
+        <input type="tel" id="phone" v-model="formData.phone" placeholder="Digite seu phone" maxlength="14" />
       </div>
       <h3>Endereço</h3>
       <div class="form-group">
@@ -27,7 +27,7 @@
         </div>
         <div class="form-group">
           <label for="number">Número:</label>
-          <input type="text" id="number" v-model="formData.address.number" placeholder="123" />
+          <input type="text" id="number" v-model="formData.address.number" placeholder="123" maxlength="5" />
         </div>
       </div>
       <div class="form-group">

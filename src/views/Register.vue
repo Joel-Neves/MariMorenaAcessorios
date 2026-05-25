@@ -34,7 +34,7 @@
           <label for="phone">Telefone:</label>
           <input type="tel" id="phone" v-model="phone" :class="{ 'is-invalid': v$.phone.$error }"
           @blur="v$.phone.$touch()"  
-          placeholder="Digite seu phone" />
+          placeholder="Digite seu phone" maxlength="14" />
           <div v-if="v$.phone.$error" class="error-message">
             <div v-for="error in v$.phone.$errors" :key="error.$uid">{{ error.$message }}</div>
           </div>
@@ -67,8 +67,8 @@ const loading = ref(false);
 const error = ref('');
 
 const rules = {
-  name: { required },
-  email: { required, email: emailValidator },
+  name: { required, minLength: minLength(8), maxLength: maxLength(50)},
+  email: { required, email: emailValidator, maxLength: maxLength(100) },
   password: {
     required,
     minLength: minLength(8),
