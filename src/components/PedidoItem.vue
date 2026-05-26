@@ -16,7 +16,7 @@
 
     <td>
       <span :class="`status status-${pedido.status}`">
-        {{ getStatusLabel(pedido.status) }}
+        {{ getStatusLabel(pedido.orderStatus) }}
       </span>
     </td>
 
@@ -45,11 +45,11 @@ const totalQuantidade = computed(() => {
 
 const getStatusLabel = (status) => {
   const labels = {
-    pendente: "Pendente",
-    processando: "Processando",
-    enviado: "Enviado",
-    entregue: "Entregue",
-    cancelado: "Cancelado",
+    PENDING: "Pendente",
+    CONFIRMED: "Confirmado",
+    SHIPPED: "Enviado",
+    DELIVERED: "Entregue",
+    CANCELLED: "Cancelado",
   };
   return labels[status] || status;
 };

@@ -105,20 +105,21 @@ import { authService } from '@/services/authService';
 import { usuarioService } from '@/services/usuarioService';
 import { useVuelidate } from '@vuelidate/core';
 import { required, numeric, minLength, maxLength } from '@vuelidate/validators';
+import { enderecoService } from '@/services/enderecoService';
 
 
 const router = useRouter();
 const checkoutStore = useCheckoutStore();
 
 const endereco = ref({
-  cep: '',
-  rua: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
-  cidade: '',
-  estado: '',
-  pais: 'Brasil'
+  street: '',
+  number: '',
+  complement: '',
+  neighbordhood: '',
+  city: '',
+  state: '',
+  country: 'Brasil',
+  clientId: authService.getCurrentUser()?.id
 });
 const enderecoSalvo = ref(null);
 const mostrarFormulario = ref(true);
@@ -126,12 +127,13 @@ const mensagemErro = ref('');
 
 const rules = computed(() => ({
   endereco: {
-    cep: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
-    rua: { required, minLength: minLength(3) },
-    numero: { required, numeric, minLength: minLength(1), maxLength: maxLength(5) },
-    bairro: { required, minLength: minLength(2) },
-    cidade: { required, minLength: minLength(2) },
-    estado: { required }
+    zipCode: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
+    street: { required, minLength: minLength(3) },
+    number: { required, numeric, minLength: minLength(1), maxLength: maxLength(5) },
+    complement: { minLength: minLength(2) },
+    neighbordhood: { required, minLength: minLength(2) },
+    city: { required, minLength: minLength(2) },
+    state: { required }
   }
 }));
 
@@ -148,13 +150,13 @@ onMounted(async () => {
   }
 
   try {
-    const data = await usuarioService.buscarPorId(currentUser.id);
-    const possuiEnderecoSalvo = data.endereco &&
-      ['cep', 'rua', 'numero', 'bairro', 'cidade', 'estado'].every((campo) => !!data.endereco[campo]);
+    const enderecoEncontrado = await enderecoService.buscarPorUsuario(currentUser.id);
+    const possuiEnderecoSalvo = enderecoEncontrado && 
+      ['zipCode', 'street', 'number', 'neighbordhood', 'city', 'state', 'country'].every((campo) => !!enderecoEncontrado[campo]);
 
     if (possuiEnderecoSalvo) {
-      enderecoSalvo.value = { ...data.endereco };
-      endereco.value = { ...endereco.value, ...data.endereco };
+      enderecoSalvo.value = { ...enderecoEncontrado };
+      endereco.value = { ...endereco.value };
       mostrarFormulario.value = false;
     }
   } catch (err) {
@@ -175,10 +177,11 @@ const buscarCep = async () => {
       const data = await response.json();
 
       if (!data.erro) {
-        endereco.value.rua = data.logradouro;
-        endereco.value.bairro = data.bairro;
-        endereco.value.cidade = data.localidade;
-        endereco.value.estado = data.uf;
+        endereco.value.street = data.logradouro;
+        endereco.value.neighbordhood = data.bairro;
+        endereco.value.city = data.localidade;
+        endereco.value.state = data.uf;
+        endereco.value.country = 'Brasil';
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
@@ -210,7 +213,7 @@ const salvarEndereco = async () => {
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
     try {
-      await usuarioService.atualizar(currentUser.id, { endereco: { ...endereco.value } });
+      await enderecoService.atualizar( enderecoSalvo.id, ...endereco );
       enderecoSalvo.value = { ...endereco.value };
     } catch (err) {
       console.error('Erro ao salvar endereço do usuário:', err);

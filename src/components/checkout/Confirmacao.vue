@@ -96,6 +96,7 @@ import { useCheckoutStore } from '@/stores/checkoutStore';
 import { pedidoService } from '@/services/pedidoService';
 import { authService } from '@/services/authService';
 import { produtoService } from '@/services/produtoService';
+import { pagamentoService } from '@/services/pagamentoService';
 
 const router = useRouter();
 const sacolaStore = useSacolaStore();
@@ -136,34 +137,26 @@ const finalizarPedido = async () => {
     }
 
     const pedido = {
-      usuarioId: user.id,
-      itens: itensSacola.value.map(item => ({
-        produtoId: item.id,
-        quantidade: item.quantidade
-      })),
-      endereco: endereco.value,
-      pagamento: {
-        metodo: pagamento.value.metodo
-      },
-      total: totalComFrete.value,
-      frete: frete.value,
-      status: 'pendente',
-      dataCriacao: new Date().toISOString().split("T")[0]
-    };
-
-
+      clientId: user.value.id,
+      createdAt: new Date().toISOString().split('T')[0],
+      orderStatus: 'PENDING',
+      paymentMethod: pagamento.value.metodo,
+      productIds: itensSacola.value.map(item => ({ productId: item.id, quantity: item.quantidade }))
+    };    
     const pedidoCriado = await pedidoService.criar(pedido);
 
-    // Diminuir estoque dos produtos
-    try {
-      for (const item of itensSacola.value) {
-        const produto = await produtoService.buscarPorId(item.id);
-        const novoEstoque = produto.estoque - item.quantidade;
-        await produtoService.atualizar(item.id, { estoque: novoEstoque });
-      }
-    } catch (estoqueError) {
-      console.error('Erro ao atualizar estoque:', estoqueError);
-      alert('Pedido criado, mas houve erro ao atualizar o estoque. Entre em contato com o suporte.');
+    const pagamentoInfo = {
+      orderId: pedidoCriado.id,
+      paymentMethod: pagamento.value.metodo,
+      amount: totalComFrete.value
+    };
+    await pagamentoService.criar(pagamentoInfo);
+
+    for (const item of itensSacola.value) {
+      const produto = await produtoService.buscarPorId(item.id);
+      await produtoService.atualizar(item.id, {
+        quantity: produto.quantidade - item.quantidade
+      });
     }
 
     checkoutStore.setPedido(pedidoCriado);
