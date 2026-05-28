@@ -11,53 +11,53 @@
 
           <div class="form-group">
             <label for="nome">Nome do produto</label>
-            <input id="nome" v-model="produto.nome" type="text" required :class="{ 'is-invalid': v$.nome.$error }" />
-            <div v-if="v$.nome.$error" class="invalid-feedback">
-              {{ getFieldError('nome') }}
+            <input id="nome" v-model="product.name" type="text" required :class="{ 'is-invalid': v$.name.$error }" />
+            <div v-if="v$.name.$error" class="invalid-feedback">
+              {{ getFieldError('name') }}
             </div>
           </div>
 
           <div class="form-group">
             <label for="preco">Preço</label>
-            <input id="preco" v-model.number="produto.preco" type="number" step="0.01" required :class="{ 'is-invalid': v$.preco.$error }" />
-            <div v-if="v$.preco.$error" class="invalid-feedback">
-              {{ getFieldError('preco') }}
+            <input id="preco" v-model.number="product.price" type="price" step="0.01" required :class="{ 'is-invalid': v$.price.$error }" />
+            <div v-if="v$.price.$error" class="invalid-feedback">
+              {{ getFieldError('price') }}
             </div>
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
-            <input id="cor" v-model="produto.cor" required :class="{ 'is-invalid': v$.cor.$error }"/>
+            <input id="cor" v-model="product.color" required :class="{ 'is-invalid': v$.color.$error }"/>
           </input>
-            <div v-if="v$.cor.$error" class="invalid-feedback">{{ getFieldError('cor') }}</div>
+            <div v-if="v$.color.$error" class="invalid-feedback">{{ getFieldError('color') }}</div>
           </div>
 
           <div class="form-group">
             <label for="categoria">Categoria</label>
-            <select id="categoria" v-model="produto.categoria" required :class="{ 'is-invalid': v$.categoria.$error }" >
+            <select id="categoria" v-model="product.category" required :class="{ 'is-invalid': v$.category.$error }" >
               <option value="">Selecione</option>
-              <option value="Anéis">Anéis</option>
-              <option value="Brincos">Brincos</option>
-              <option value="Colares">Colares</option>
-              <option value="Conjuntos">Conjuntos</option>
-              <option value="Pulseiras">Pulseiras</option>
-              <option value="Tiaras">Tiaras</option>
-              <option value="Outros">Outros</option>
+              <option value="RINGS">Anéis</option>
+              <option value="EARRINGS">Brincos</option>
+              <option value="NECKLACES">Colares</option>
+              <option value="SETS">Conjuntos</option>
+              <option value="BRACELETS">Pulseiras</option>
+              <option value="HEADBANDS">Tiaras</option>
+              <option value="OTHERS">Outros</option>
             </select>
-            <div v-if="v$.categoria.$error" class="invalid-feedback">{{ getFieldError('categoria') }}</div>
+            <div v-if="v$.category.$error" class="invalid-feedback">{{ getFieldError('category') }}</div>
           </div>
           <div class="form-group">
             <label for="estoque">Estoque</label>
-            <input id="estoque" v-model.number="produto.estoque" type="number" step="1" min="0" required :class="{ 'is-invalid': v$.estoque.$error }" />
-            <div v-if="v$.estoque.$error" class="invalid-feedback">
-              {{ getFieldError('estoque') }}
+            <input id="estoque" v-model.number="product.quantity" type="number" step="1" min="0" required :class="{ 'is-invalid': v$.quantity.$error }" />
+            <div v-if="v$.quantity.$error" class="invalid-feedback">
+              {{ getFieldError('quantity') }}
             </div>
           </div>
 
           <div class="form-group">
             <label for="descricao">Descrição</label>
-            <textarea id="descricao" v-model="produto.descricao" rows="4" required :class="{ 'is-invalid': v$.descricao.$error }"></textarea>
-            <div v-if="v$.descricao.$error" class="invalid-feedback">
-              {{ getFieldError('descricao') }}
+            <textarea id="descricao" v-model="product.description" rows="4" required :class="{ 'is-invalid': v$.description.$error }"></textarea>
+            <div v-if="v$.description.$error" class="invalid-feedback">
+              {{ getFieldError('description') }}
             </div>
           </div>
         </section>
@@ -107,44 +107,44 @@ import { storageService } from '@/services/storageService';
 import { helpers, minLength, minValue, required, numeric } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
 
-const produto = ref({
-  nome: '',
-  preco: null,
-  cor: '',
-  categoria: '',
-  estoque: null,
-  descricao: '',
-  ativo: true,
+
+const product = ref({
+  name: '',
+  description: '',
+  price: null,
+  quantity: null,
+  color: '',
+  category: '',
 });
 
 const rules = {
-  nome: {
+  name: {
     required: helpers.withMessage('O nome do produto é obrigatório.', required),
     minLength: helpers.withMessage('O nome deve ter ao menos 3 caracteres.', minLength(3)),
   },
-  preco: {
+  price: {
     required: helpers.withMessage('O preço do produto é obrigatório.', required),
     minValue: helpers.withMessage('O preço deve ser maior que zero.', minValue(0.01),),
     numeric: helpers.withMessage('O preço deve ser um valor numérico.', numeric),
   },
-  cor: {
+  color: {
     required: helpers.withMessage('A cor do produto é obrigatória.', required),
   },
-  categoria: {
+  category: {
     required: helpers.withMessage('A categoria do produto é obrigatória.', required),
   },
-  estoque: {
+  quantity: {
     required: helpers.withMessage('O estoque do produto é obrigatório.', required),
     minValue: helpers.withMessage('O estoque deve ser igual ou maior que zero.', minValue(0)),
     numeric: helpers.withMessage('O estoque deve ser um valor numérico.', numeric),
   },
-  descricao: {
+  description: {
     required: helpers.withMessage('A descrição do produto é obrigatória.', required),
     minLength: helpers.withMessage('A descrição deve ter ao menos 10 caracteres.', minLength(10)),
   },
 };
 
-const v$ = useVuelidate(rules, produto);
+const v$ = useVuelidate(rules, product);
 
 const arquivos = ref([]);
 const tentouEnviar = ref(false);
@@ -174,25 +174,8 @@ const salvarProduto = async () => {
   }
 
   try {
-    const novoProduto = {
-      ...produto.value,
-      imagens: []
-    };
 
-    const produtoCriado = await produtoService.criar(novoProduto);
-
-    const imagensParaAtualizar = [];
-
-    for (const arquivo of arquivos.value) {
-      const { url, caminho } = await storageService.uploadImagemProduto(
-        arquivo,
-        produtoCriado.id
-      );
-
-      imagensParaAtualizar.push({ url, path: caminho });
-    }
-
-    await produtoService.atualizar(produtoCriado.id, { imagens: imagensParaAtualizar });
+    await produtoService.criar(product.value,arquivos.value);
 
     alert('Produto cadastrado com sucesso!');
     limparFormulario();
@@ -203,14 +186,13 @@ const salvarProduto = async () => {
 };
 
 const limparFormulario = () => {
-  produto.value = {
-    nome: '',
-    preco: null,
-    cor: '',
-    categoria: '',
-    estoque: null,
-    descricao: '',
-    ativo: true,
+  product.value = {
+    name: '',
+    price: null,
+    color: '',
+    category: '',
+    quantity: null,
+    description: ''
   };
   arquivos.value = [];
   tentouEnviar.value = false;

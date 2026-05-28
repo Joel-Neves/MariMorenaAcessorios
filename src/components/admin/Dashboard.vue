@@ -132,7 +132,7 @@ const carregarKPIs = async () => {
 const carregarPedidosRecentes = async () => {
   try {
     const pedidos = await pedidoService.listarTodos()
-    const produtos = await produtoService.listarTodos()
+    const produtos = await produtoService.buscarTodos()
     const produtoMap = produtos.reduce((map, prod) => {
       map[prod.id] = prod.nome
       return map

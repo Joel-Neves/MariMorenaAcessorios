@@ -113,7 +113,7 @@ const categoriasUnicas = computed(() => {
 
 const carregarProdutos = async () => {
   try {
-    const produtosData = await produtoService.listarTodos()
+    const produtosData = await produtoService.buscarTodos()
     produtos.value = produtosData
   } catch (err) {
     error.value = 'Erro ao carregar produtos: ' + err.message
@@ -134,7 +134,7 @@ const confirmarExclusao = (produto) => {
 
 const excluirProduto = async (id) => {
   try {
-    await produtoService.excluir(id)
+    await produtoService.deletar(id)
     produtos.value = produtos.value.filter(produto => produto.id !== id)
   } catch (err) {
     alert('Erro ao excluir produto: ' + err.message)
