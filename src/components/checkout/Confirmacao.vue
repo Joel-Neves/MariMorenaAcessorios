@@ -137,18 +137,22 @@ const finalizarPedido = async () => {
     }
 
     const pedido = {
-      clientId: user.value.id,
-      createdAt: new Date().toISOString().split('T')[0],
+      clientId: user.id,
+      orderItems: itensSacola.value.map(item => ({
+        productId: item.id,
+        quantity: item.quantidade
+      })),
+      amount: Number(totalComFrete.value.toFixed(2)),
       orderStatus: 'PENDING',
-      paymentMethod: pagamento.value.metodo,
-      productIds: itensSacola.value.map(item => ({ productId: item.id, quantity: item.quantidade }))
+      createdAt: new Date().toISOString()
     };    
     const pedidoCriado = await pedidoService.criar(pedido);
 
     const pagamentoInfo = {
       orderId: pedidoCriado.id,
       paymentMethod: pagamento.value.metodo,
-      amount: totalComFrete.value
+      amount: pedidoCriado.amount,
+      paymentStatus: 'PENDING',
     };
     await pagamentoService.criar(pagamentoInfo);
 

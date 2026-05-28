@@ -15,7 +15,7 @@
     </td>
 
     <td>
-      <span :class="`status status-${pedido.status}`">
+      <span :class="`status status-${pedido.orderStatus}`">
         {{ getStatusLabel(pedido.orderStatus) }}
       </span>
     </td>
@@ -37,10 +37,11 @@ const props = defineProps({
   pedido: Object
 });
 
-const firstItem = computed(() => props.pedido?.itens?.[0] || null);
+const firstItem = computed(() => props.pedido?.orderItems?.[0] || null);
 
 const totalQuantidade = computed(() => {
-  return props.pedido?.itens?.reduce((sum, item) => sum + (item.quantidade || 0), 0) || 0;
+  const itens = props.pedido?.orderItems || [];
+  return itens.reduce((sum, item) => sum + (item.quantidade || 0), 0);
 });
 
 const getStatusLabel = (status) => {

@@ -117,7 +117,7 @@ router.beforeEach(async (to, from, next) => {
   try {
     user = await authService.verifyAuth()
   } catch (error) {
-    console.error('Erro ao verificar autenticação:', error)
+    console.warn('Usuario não autenticado')
     return next()
   }
 
