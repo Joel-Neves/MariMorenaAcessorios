@@ -28,11 +28,11 @@ function mapProduto(data = {}) {
     descricao: data.description,
     preco: data.price,
     estoque: data.quantity,
-    cor: data.colo,
+    cor: data.color,
     categoria: data.category,
-    imageUrls,     // array of normalized strings
-    images: imageUrls, // keep English alias
-    imagens,       // array of { url } objects for components expecting produto.imagens[0].url
+    imageUrls,     
+    images: imageUrls, 
+    imagens,       
   };
 }
 
