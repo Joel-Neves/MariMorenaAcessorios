@@ -42,8 +42,8 @@
             <tr v-for="produto in produtosFiltrados" :key="produto.id">
               <td>
                 <img
-                  v-if="produto.imagens"
-                  :src="produto.imagens[0].url"
+                  v-if="temImagem(produto)"
+                  :src="obterUrlImagem(produto)"
                   alt="Miniatura do produto"
                   class="miniatura"
                 />
@@ -52,7 +52,7 @@
                 </div>
               </td>
               <td>{{ produto.nome }}</td>
-              <td>{{ produto.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</td>
+              <td>{{ formatarPreco(produto.preco ?? produto.price) }}</td>
               <td>{{ produto.categoria }}</td>
               <td>{{ produto.estoque }}</td>
               <td class="acoes">
@@ -81,7 +81,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { produtoService } from '@/services/produtoService'
+import { produtoService, formatarPreco, obterUrlImagem, temImagem } from '@/services/produtoService'
 
 const produtos = ref([])
 const loading = ref(true)

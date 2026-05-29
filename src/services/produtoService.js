@@ -1,17 +1,64 @@
 import axiosInstance from "./api";
 
-const mapProduto = (data) => {
+const API_BASE_URL = "http://localhost:8080";
+
+function normalizarUrlImagem(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `${API_BASE_URL}${url}`;
+}
+
+function mapProduto(data = {}) {
+  const rawUrls = Array.isArray(data.imageUrls)
+    ? data.imageUrls.filter(Boolean)
+    : Array.isArray(data.images)
+      ? data.images.filter(Boolean)
+      : data.images
+        ? [data.images].filter(Boolean)
+        : [];
+
+  const imageUrls = rawUrls.map(normalizarUrlImagem).filter(Boolean);
+  const imagens = imageUrls.map((url) => ({ url }));
+
   return {
     id: data.id,
-    name: data.name,
-    description: data.description,
-    price: data.price,
-    quantity: data.quantity,
-    color: data.color,
-    category: data.category,
-    imageUrl: (data.imageUrl || []).map((url) => ({ url })), // Mapeia cada URL para um objeto com a propriedade 'url'
+    nome: data.name,
+    descricao: data.description,
+    preco: data.price,
+    estoque: data.quantity,
+    cor: data.colo,
+    categoria: data.category,
+    imageUrls,     // array of normalized strings
+    images: imageUrls, // keep English alias
+    imagens,       // array of { url } objects for components expecting produto.imagens[0].url
   };
-};
+}
+
+export function formatarPreco(valor) {
+  const numero = Number(valor ?? 0);
+  return numero.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
+export function obterUrlImagem(produto) {
+  const imagem = produto?.imageUrls?.[0] ?? produto?.images?.[0] ?? produto?.imagens?.[0];
+
+  if (!imagem) return null;
+
+  if (typeof imagem === "string") {
+    return normalizarUrlImagem(imagem);
+  }
+
+  return normalizarUrlImagem(imagem.url);
+}
+
+export function temImagem(produto) {
+  return Boolean(obterUrlImagem(produto));
+}
 
 export const produtoService = {
   async buscarTodos() {

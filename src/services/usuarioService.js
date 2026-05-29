@@ -1,10 +1,16 @@
 import axiosInstance from './api';
-import { authService } from './authService';
+
+const mapUsuario = (data = {}) => ({
+  id: data.id,
+  nome: data.name,
+  email: data.email
+});
 
 export const usuarioService = {
   async listarTodos() {
     try {
-      return await axiosInstance.get('/users');
+      const response = await axiosInstance.get('/clients');
+      return response.data.map(mapUsuario);
     } catch (error) {
       console.error('Erro ao listar usuários:', error);
       throw new Error('Não foi possível carregar os usuários');
@@ -16,8 +22,8 @@ export const usuarioService = {
       if (!id) {
         throw new Error('ID do usuário não fornecido');
       }
-      const response = await axiosInstance.get(`/users/${id}`);
-      return response.data;
+      const response = await axiosInstance.get(`/clients/${id}`);
+      return mapUsuario(response.data);
     } catch (error) {
       console.error('Erro ao buscar por ID do usuário:', error);
       throw error;
@@ -26,7 +32,8 @@ export const usuarioService = {
 
   async criar(usuario) {
     try {
-      return await axiosInstance.post('/clients', usuario);
+      const response = await axiosInstance.post('/clients', usuario);
+      return mapUsuario(response.data);
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       throw error;
@@ -35,7 +42,8 @@ export const usuarioService = {
 
   async atualizar(id, dadosAtualizados) {
     try {
-      return await axiosInstance.put(`/clients/${id}`, dadosAtualizados);
+      const response = await axiosInstance.put(`/clients/${id}`, dadosAtualizados);
+      return mapUsuario(response.data);
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
       throw new Error('Não foi possível atualizar o usuário');

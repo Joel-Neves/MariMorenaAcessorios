@@ -2,7 +2,7 @@
   <div class="product-card">
     <router-link :to="`/produto/${produto.id}`" class="product-link">
       <div class="product-image">
-        <img :src="produto.imagens[0].url" :alt="produto.nome" />
+        <img :src="obterUrlImagem(produto)" :alt="produto.nome" />
       </div>
       <div class="product-info">
         <h3 class="product-name">{{ produto.nome }}</h3>
@@ -27,6 +27,7 @@
 <script setup>
 import { useSacolaStore } from '../stores/sacolaStore';
 import { useFavoritosStore } from '../stores/favoritosStore';
+import { formatarPreco, obterUrlImagem } from '@/services/produtoService'
 import { computed } from 'vue';
 import { mdiHeart } from '@mdi/js';
 
@@ -42,9 +43,6 @@ const favoritosStore = useFavoritosStore();
 
 const isFavorito = computed(() => favoritosStore.isFavorito(props.produto.id));
 
-const formatarPreco = (preco) => {
-  return preco.toFixed(2).replace('.', ',');
-};
 
 const adicionarNaSacola = () => {
   sacolaStore.adicionarItem(props.produto);
