@@ -14,14 +14,14 @@ export const useProdutoStore = defineStore('products', {
       return state.produtos.find(produto => produto.id === id);
     },
 
-    produtosPorCategoria: (state) => (category) => {
-      if (!category) return state.produtos;
-      return state.produtos.filter(produto => (produto.categoria || produto.category) === category);
+    produtosPorCategoria: (state) => (categoria) => {
+      if (!categoria) return state.produtos;
+      return state.produtos.filter(produto => (produto.categoria || produto.categoria) === categoria);
     },
 
     categorias(state) {
       const produtos = Array.isArray(state.produtos) ? state.produtos : [];
-      const cats = produtos.map(p => p.categoria || p.category).filter(Boolean);
+      const cats = produtos.map(p => p.categoria || p.categoria).filter(Boolean);
       return [...new Set(cats)];
     }
   },

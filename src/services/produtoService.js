@@ -3,24 +3,15 @@ import axiosInstance from "./api";
 const API_BASE_URL = "http://localhost:8080";
 
 function normalizarUrlImagem(url) {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
-  }
+  if (!url) return "";
   return `${API_BASE_URL}${url}`;
 }
 
-function mapProduto(data = {}) {
-  const rawUrls = Array.isArray(data.imageUrls)
-    ? data.imageUrls.filter(Boolean)
-    : Array.isArray(data.images)
-      ? data.images.filter(Boolean)
-      : data.images
-        ? [data.images].filter(Boolean)
-        : [];
+function mapProduto(data) {
+  const imagens = data.imageUrls.map((img) => ({
+    url: normalizarUrlImagem(img),
+  }));
 
-  const imageUrls = rawUrls.map(normalizarUrlImagem).filter(Boolean);
-  const imagens = imageUrls.map((url) => ({ url }));
 
   return {
     id: data.id,
@@ -30,9 +21,7 @@ function mapProduto(data = {}) {
     estoque: data.quantity,
     cor: data.color,
     categoria: data.category,
-    imageUrls,     
-    images: imageUrls, 
-    imagens,       
+    imagens,
   };
 }
 
@@ -45,15 +34,9 @@ export function formatarPreco(valor) {
 }
 
 export function obterUrlImagem(produto) {
-  const imagem = produto?.imageUrls?.[0] ?? produto?.images?.[0] ?? produto?.imagens?.[0];
-
-  if (!imagem) return null;
-
-  if (typeof imagem === "string") {
-    return normalizarUrlImagem(imagem);
+  if (produto.imagens && produto.imagens.length > 0) {
+    return produto.imagens[0].url;
   }
-
-  return normalizarUrlImagem(imagem.url);
 }
 
 export function temImagem(produto) {
