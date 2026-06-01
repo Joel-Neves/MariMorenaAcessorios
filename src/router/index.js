@@ -43,7 +43,7 @@ const adminGuard = async (to, from, next) => {
       return next('/login')
     }
 
-    const response = await usuarioService.buscarPorId(user.id)
+    const response = await authService.getCurrentUser(user.id)
     const usuario = response?.data ?? response
     if (usuario.userRole === 'ADMIN') {
       return next()
@@ -123,7 +123,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (user) {
     try {
-      const response = await usuarioService.buscarPorId(user.id)
+      const response = await authService.getCurrentUser(user.id)
       const usuario = response?.data ?? response
       if (usuario.userRole === 'ADMIN' && !to.path.startsWith('/admin')) {
         return next('/admin')
