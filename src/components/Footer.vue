@@ -37,7 +37,7 @@ const usuario = ref(null);
 const eAutenticado = ref(false);
 
 function isAdmin(){
-  return usuario.value?.userRole === 'ADMIN';
+  return usuario.value?.role === 'ADMIN';
 }
 
 onMounted(async () => {
@@ -45,7 +45,7 @@ onMounted(async () => {
   eAutenticado.value = !!user;
   if (user) {
     try {
-      usuario.value = await usuarioService.buscarPorId(user.id);
+      usuario.value = await authService.getCurrentUser(user.id);
     } catch (err) {
       console.error('Erro ao buscar usuário no footer:', err);
       usuario.value = null;

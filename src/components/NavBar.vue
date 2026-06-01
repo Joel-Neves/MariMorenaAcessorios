@@ -64,7 +64,7 @@ onMounted(async () => {
     eAutenticado.value = !!(await authService.waitForUser());
     if (eAutenticado.value) {
       const user = authService.getCurrentUser();
-      usuario.value = await usuarioService.buscarPorId(user.id);
+      usuario.value = await authService.getCurrentUser(user.id);
     }
   } catch (error) {
     console.error('Erro ao obter usuário:', error);
