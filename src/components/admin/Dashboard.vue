@@ -158,7 +158,7 @@ const carregarPedidosRecentes = async () => {
 
 const carregarProdutosVendidos = async () => {
   try {
-    const produtos = await produtoService.listarTodos()
+    const produtos = await produtoService.buscarTodos()
     const pedidos = await pedidoService.listarTodos()
 
     // Calculate total sold quantity for each product
