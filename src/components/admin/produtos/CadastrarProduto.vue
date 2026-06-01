@@ -103,7 +103,6 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { produtoService } from '@/services/produtoService';
-import { storageService } from '@/services/storageService';
 import { helpers, minLength, minValue, required, numeric } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
 
