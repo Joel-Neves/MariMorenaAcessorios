@@ -136,6 +136,7 @@ onMounted(async () => {
       nome: produtoData.nome || '',
       preco: produtoData.preco || null,
       categoria: produtoData.categoria || '',
+      cor: produtoData.cor || '',
       descricao: produtoData.descricao || '',
       estoque: produtoData.estoque || null,
       ativo: produtoData.ativo !== false 
