@@ -20,9 +20,23 @@ function mapProduto(data) {
     preco: data.price,
     estoque: data.quantity,
     cor: data.color,
-    categoria: data.category,
+    categoria: data.category ? getLabel(categoryMap, data.category, data.category) : "",
     imagens,
   };
+}
+const categoryMap = {
+  RINGS: "Anéis",
+  EARRINGS: "Brincos",
+  NECKLACES: "Colares",
+  SETS: "Conjuntos",
+  BRACELETS: "Pulseiras",
+  HEADBANDS: "Tiaras",
+  OTHERS: "Outros",
+};
+function getLabel(map, value, fallback = '') {
+  if (value === null || value === undefined) return fallback;
+  const key = String(value).toUpperCase();
+  return map?.[key] ?? fallback ?? value;
 }
 
 export function formatarPreco(valor) {

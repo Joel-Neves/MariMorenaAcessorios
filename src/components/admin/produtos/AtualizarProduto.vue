@@ -19,15 +19,7 @@
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
-            <select id="cor" v-model="produto.cor" required>
-              <option value="">Selecione</option>
-              <option value="dourado">Dourado</option>
-              <option value="prata">Prata</option>
-              <option value="verde">Verde</option>
-              <option value="vermelho">Vermelho</option>
-              <option value="preto">Preto</option>
-              <option value="rosa">Rosa</option>
-            </select>
+            <input id="cor" v-model="produto.cor" type="text" />
           </div>
           <div class="form-group">
             <label for="categoria">Categorias</label>
@@ -165,10 +157,8 @@ const removerArquivoNovo = (index) => {
 
 const removerImagemExistente = async (index) => {
   const produtoId = route.params.id;
-const imagem = imagensExistentes.value[index];
 
   try {
-    await storageService.deletarImagem(imagem.path); 
     imagensExistentes.value.splice(index, 1);
     await produtoService.atualizar(produtoId, {imagens: imagensExistentes.value});
   } catch (error) {
