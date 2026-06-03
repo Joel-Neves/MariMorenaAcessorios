@@ -288,6 +288,8 @@ onMounted(() => {
 }
 
 .produtos-table td {
+  justify-content: center;
+  text-align: center;
   padding: 14px;
   color: #555;
 }
