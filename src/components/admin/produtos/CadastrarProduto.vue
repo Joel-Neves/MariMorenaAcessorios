@@ -19,7 +19,7 @@
 
           <div class="form-group">
             <label for="preco">Preço</label>
-            <input id="preco" v-model.number="product.price" type="price" step="0.01" required :class="{ 'is-invalid': v$.price.$error }" />
+            <input id="preco" v-model.number="product.price" type="number" step="0.01" min="0" required :class="{ 'is-invalid': v$.price.$error }" />
             <div v-if="v$.price.$error" class="invalid-feedback">
               {{ getFieldError('price') }}
             </div>
@@ -35,13 +35,13 @@
             <label for="categoria">Categoria</label>
             <select id="categoria" v-model="product.category" required :class="{ 'is-invalid': v$.category.$error }" >
               <option value="">Selecione</option>
-              <option value="RINGS">Anéis</option>
-              <option value="EARRINGS">Brincos</option>
-              <option value="NECKLACES">Colares</option>
-              <option value="SETS">Conjuntos</option>
-              <option value="BRACELETS">Pulseiras</option>
-              <option value="HEADBANDS">Tiaras</option>
-              <option value="OTHERS">Outros</option>
+              <option value="ANEL">Anéis</option>
+              <option value="BRINCO">Brincos</option>
+              <option value="COLAR">Colares</option>
+              <option value="CONJUNTO">Conjuntos</option>
+              <option value="BRACELETE">Pulseiras</option>
+              <option value="TIARA">Tiaras</option>
+              <option value="OUTROS">Outros</option>
             </select>
             <div v-if="v$.category.$error" class="invalid-feedback">{{ getFieldError('category') }}</div>
           </div>
@@ -113,7 +113,7 @@ const product = ref({
   price: null,
   quantity: null,
   color: '',
-  category: '',
+  category: ''
 });
 
 const rules = {

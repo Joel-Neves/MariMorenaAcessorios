@@ -20,24 +20,12 @@ function mapProduto(data) {
     preco: data.price,
     estoque: data.quantity,
     cor: data.color,
-    categoria: data.category ? getLabel(categoryMap, data.category, data.category) : "",
+    categoria: data.category,
+    ativo: data.active,
     imagens,
   };
 }
-const categoryMap = {
-  RINGS: "Anéis",
-  EARRINGS: "Brincos",
-  NECKLACES: "Colares",
-  SETS: "Conjuntos",
-  BRACELETS: "Pulseiras",
-  HEADBANDS: "Tiaras",
-  OTHERS: "Outros",
-};
-function getLabel(map, value, fallback = '') {
-  if (value === null || value === undefined) return fallback;
-  const key = String(value).toUpperCase();
-  return map?.[key] ?? fallback ?? value;
-}
+
 
 export function formatarPreco(valor) {
   const numero = Number(valor ?? 0);
@@ -117,13 +105,26 @@ export const produtoService = {
     }
   },
 
-  async atualizar(id, dadosAtualizados) {
+  async atualizar(id, dadosAtualizados, arquivos) {
     try {
-      const response = await axiosInstance.put(
-        `/products/${id}`,
-        dadosAtualizados,
-      );
-      return mapProduto(response.data);
+      const formData = new FormData();
+
+      const productBlob = new Blob([JSON.stringify(dadosAtualizados)], {
+        type: "application/json",
+      });
+      formData.append("product", productBlob);
+
+      if (arquivos && arquivos.length > 0) {
+        arquivos.forEach((arquivo) => {
+          formData.append("files", arquivo);
+        });
+      }
+      const response = await axiosInstance.put(`/products/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
     } catch (error) {
       console.error("Erro ao atualizar produto:", error);
       throw new Error("Não foi possível atualizar o produto");

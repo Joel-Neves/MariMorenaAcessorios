@@ -10,43 +10,43 @@
 
           <div class="form-group">
             <label for="nome">Nome do produto</label>
-            <input id="nome" v-model="produto.nome" type="text" required />
+            <input id="nome" v-model="produto.name" type="text" required />
           </div>
 
           <div class="form-group">
             <label for="preco">Preço</label>
-            <input id="preco" v-model.number="produto.preco" type="number" step="0.01" required />
+            <input id="preco" v-model.number="produto.price" type="number" step="0.01" required />
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
-            <input id="cor" v-model="produto.cor" type="text" />
+            <input id="cor" v-model="produto.color" type="text" />
           </div>
           <div class="form-group">
             <label for="categoria">Categorias</label>
-            <select id="categoria" v-model="produto.categoria" required>
+            <select id="categoria" v-model="produto.category" required>
               <option value="">Selecione uma categoria</option>
-              <option value="Anéis">Anéis</option>
-              <option value="Brincos">Brincos</option>
-              <option value="Colares">Colares</option>
-              <option value="Conjuntos">Conjuntos</option>
-              <option value="Pulseiras">Pulseiras</option>
-              <option value="Tiaras">Tiaras</option>
-              <option value="Outros">Outros</option>
+              <option value="ANEL">Anéis</option>
+              <option value="BRINCO">Brincos</option>
+              <option value="COLAR">Colares</option>
+              <option value="CONJUNTO">Conjuntos</option>
+              <option value="BRACELETE">Pulseiras</option>
+              <option value="TIARA">Tiaras</option>
+              <option value="OUTROS">Outros</option>
             </select>
           </div>
           <div class="form-group">
             <label for="estoque">Estoque</label>
-            <input id="estoque" v-model.number="produto.estoque" type="number" step="0.01" required />
+            <input id="estoque" v-model.number="produto.quantity" type="number" step="0.01" required />
           </div>
 
           <div class="form-group">
             <label for="descricao">Descrição</label>
-            <textarea id="descricao" v-model="produto.descricao" rows="4" required></textarea>
+            <textarea id="descricao" v-model="produto.description" rows="4" required></textarea>
           </div>
 
           <div>
             <label for="ativo">
-              <input id="ativo" v-model="produto.ativo" type="checkbox" />
+              <input id="ativo" v-model="produto.active" type="checkbox" />
               Produto ativo
             </label>
           </div>
@@ -69,9 +69,9 @@
             <div class="upload-content">
               <i class="fas fa-camera"></i>
               <p>Clique para fazer upload ou arraste e solte</p>
-              <p class="upload-formats">Formatos suportados: png, jpg, webp, mp4</p>
+              <p class="upload-formats">Formatos suportados: png, jpg, jpeg, webp</p>
             </div>
-            <input ref="fileInput" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.mp4" @change="onFileChange"
+            <input ref="fileInput" type="file" multiple accept=".png,.jpg,.jpeg,.webp" @change="onFileChange"
               style="display: none;" />
           </div>
 
@@ -101,19 +101,18 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { produtoService } from '@/services/produtoService';
-import { storageService } from '@/services/storageService';
 
 const route = useRoute();
 const router = useRouter();
 
 const produto = ref({
-  nome: '',
-  preco: null,
-  cor: '',
-  categoria: '',
-  descricao: '',
-  estoque: null,
-  ativo: true
+  name: '',
+  price: null,
+  color: '',
+  category: '',
+  description: '',
+  quantity: null,
+  active: true
 });
 
 const imagensExistentes = ref([]);
@@ -125,13 +124,13 @@ onMounted(async () => {
   try {
     const produtoData = await produtoService.buscarPorId(produtoId);
     produto.value = {
-      nome: produtoData.nome || '',
-      preco: produtoData.preco || null,
-      categoria: produtoData.categoria || '',
-      cor: produtoData.cor || '',
-      descricao: produtoData.descricao || '',
-      estoque: produtoData.estoque || null,
-      ativo: produtoData.ativo !== false 
+      name: produtoData.nome || '',
+      price: produtoData.preco || null,
+      category: produtoData.categoria || '',
+      color: produtoData.cor || '',
+      description: produtoData.descricao || '',
+      quantity: produtoData.estoque || null,
+      active: produtoData.ativo !== false 
     };
     imagensExistentes.value = produtoData.imagens || [];
   } catch (error) {
@@ -156,11 +155,8 @@ const removerArquivoNovo = (index) => {
 };
 
 const removerImagemExistente = async (index) => {
-  const produtoId = route.params.id;
-
   try {
     imagensExistentes.value.splice(index, 1);
-    await produtoService.atualizar(produtoId, {imagens: imagensExistentes.value});
   } catch (error) {
     console.error('Erro ao remover imagem:', error);
     alert('Erro ao remover imagem: ' + error.message);
@@ -168,19 +164,9 @@ const removerImagemExistente = async (index) => {
 };
 
 const salvarProduto = async () => {
+  try {
   const produtoId = route.params.id;
-  try {
-    const novasImagens = []; 
-    for (const arquivo of arquivosNovos.value) {
-      const imagemData = await storageService.uploadImagemProduto(arquivo, produtoId); 
-      novasImagens.push(imagemData);
-    }
-    const todasImagens = [...imagensExistentes.value, ...novasImagens]; 
-    const dadosAtualizados = {
-      ...produto.value,
-      imagens: todasImagens
-    };
-    await produtoService.atualizar(produtoId, dadosAtualizados);
+    await produtoService.atualizar(produtoId, produto.value, arquivosNovos.value);
     alert('Produto atualizado com sucesso!');
     router.push('/admin/produtos');
   } catch (error) {
@@ -209,9 +195,6 @@ const excluirProduto = async () => {
   if (confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) {
     const produtoId = route.params.id;
     try {
-      for (const imagem of imagensExistentes.value) { 
-        await storageService.deletarImagem(imagem.path);
-      }
       await produtoService.deletar(produtoId);
       alert('Produto excluído com sucesso!');
       router.push('/admin/produtos');
@@ -223,6 +206,15 @@ const excluirProduto = async () => {
 };
 </script>
 <style scoped>
+.upload-area {
+  margin-top: 20px;
+  padding: 30px;
+  border: 2px dashed #dcdcdc;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #fafafa;
+}
 .atualizar-produto {
   max-width: 900px;
   margin: 0 auto;
