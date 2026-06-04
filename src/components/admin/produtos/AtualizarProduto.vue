@@ -15,7 +15,7 @@
 
           <div class="form-group">
             <label for="preco">Preço</label>
-            <input id="preco" v-model.number="produto.price" type="number" step="0.01" required />
+            <input id="preco" v-model.number="produto.price" type="number" step="0.01" min="0" required />
           </div>
           <div class="form-group">
             <label for="cor">Cor</label>
@@ -36,7 +36,7 @@
           </div>
           <div class="form-group">
             <label for="estoque">Estoque</label>
-            <input id="estoque" v-model.number="produto.quantity" type="number" step="0.01" required />
+            <input id="estoque" v-model.number="produto.quantity" type="number" min="1" required />
           </div>
 
           <div class="form-group">
