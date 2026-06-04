@@ -40,10 +40,10 @@
     <div class="endereco-entrega">
       <h3>Endereço de Entrega</h3>
       <div class="endereco-info">
-        <p>{{ endereco.rua }}, {{ endereco.numero }}</p>
-        <p v-if="endereco.complemento">{{ endereco.complemento }}</p>
-        <p>{{ endereco.bairro }}, {{ endereco.cidade }} - {{ endereco.estado }}</p>
-        <p>CEP: {{ endereco.cep }}</p>
+        <p>{{ endereco.street }}, {{ endereco.number }}</p>
+        <p v-if="endereco.complement">{{ endereco.complement }}</p>
+        <p>{{ endereco.neighborhood }}, {{ endereco.city }} - {{ endereco.state }}</p>
+        <p>CEP: {{ endereco.zipCode }}</p>
       </div>
     </div>
 

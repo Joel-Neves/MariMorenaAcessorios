@@ -4,10 +4,10 @@
 
     <div v-if="enderecoSalvo && !mostrarFormulario" class="endereco-salvo">
       <h3>Endereço cadastrado</h3>
-      <p>{{ enderecoSalvo.rua }}, {{ enderecoSalvo.numero }}</p>
-      <p>{{ enderecoSalvo.bairro }} - {{ enderecoSalvo.cidade }}/{{ enderecoSalvo.estado }}</p>
-      <p>CEP: {{ enderecoSalvo.cep }}</p>
-      <p v-if="enderecoSalvo.complemento">Complemento: {{ enderecoSalvo.complemento }}</p>
+      <p>{{ enderecoSalvo.street }}, {{ enderecoSalvo.number }}</p>
+      <p>{{ enderecoSalvo.neighborhood }} - {{ enderecoSalvo.city }}/{{ enderecoSalvo.state }}</p>
+      <p>CEP: {{ enderecoSalvo.zipCode }}</p>
+      <p v-if="enderecoSalvo.complement">Complemento: {{ enderecoSalvo.complement }}</p>
 
       <div class="form-actions">
         <router-link to="/sacola" class="btn-voltar">Voltar para Sacola</router-link>
@@ -19,37 +19,37 @@
     <form v-else @submit.prevent="salvarEndereco" class="endereco-form">
       <div class="form-group">
         <label for="cep">CEP:</label>
-        <input type="text" id="cep" v-model="endereco.cep" @input="buscarCep" maxlength="8" :class="{ 'is-invalid': v$.endereco.cep.$error }" />
+        <input type="text" id="cep" v-model="endereco.zipCode" @input="buscarCep" maxlength="8" :class="{ 'is-invalid': v$.endereco.zipCode.$error }" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="rua">Rua:</label>
-          <input type="text" id="rua" v-model="endereco.rua" placeholder="Nome da rua" :class="{ 'is-invalid': v$.endereco.rua.$error }" />
+          <input type="text" id="rua" v-model="endereco.street" placeholder="Nome da rua" :class="{ 'is-invalid': v$.endereco.street.$error }" />
         </div>
         <div class="form-group">
           <label for="numero">Número:</label>
-          <input type="text" id="numero" v-model="endereco.numero" placeholder="123" :class="{ 'is-invalid': v$.endereco.numero.$error }" />
+          <input type="text" id="numero" v-model="endereco.number" placeholder="123" :class="{ 'is-invalid': v$.endereco.number.$error }" />
         </div>
       </div>
       <div class="form-group">
         <label for="complemento">Complemento:</label>
-        <input type="text" id="complemento" v-model="endereco.complemento"
+        <input type="text" id="complemento" v-model="endereco.complement"
           placeholder="Apartamento, bloco, etc." />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="bairro">Bairro:</label>
-          <input type="text" id="bairro" v-model="endereco.bairro" placeholder="Nome do bairro" :class="{ 'is-invalid': v$.endereco.bairro.$error }" />
+          <input type="text" id="bairro" v-model="endereco.neighborhood" placeholder="Nome do bairro" :class="{ 'is-invalid': v$.endereco.neighborhood.$error }" />
         </div>
         <div class="form-group">
           <label for="cidade">Cidade:</label>
-          <input type="text" id="cidade" v-model="endereco.cidade" placeholder="Nome da cidade" :class="{ 'is-invalid': v$.endereco.cidade.$error }" />
+          <input type="text" id="cidade" v-model="endereco.city" placeholder="Nome da cidade" :class="{ 'is-invalid': v$.endereco.city.$error }" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="estado">Estado:</label>
-          <select id="estado" v-model="endereco.estado" :class="{ 'is-invalid': v$.endereco.estado.$error }">
+          <select id="estado" v-model="endereco.state" :class="{ 'is-invalid': v$.endereco.state.$error }">
             <option value="">Selecione</option>
             <option value="AC">Acre</option>
             <option value="AL">Alagoas</option>
@@ -82,7 +82,7 @@
         </div>
         <div class="form-group">
           <label for="pais">País:</label>
-          <input type="text" id="pais" v-model="endereco.pais" value="Brasil" readonly />
+          <input type="text" id="pais" v-model="endereco.country" value="Brasil" readonly />
         </div>
       </div>
 
@@ -112,14 +112,15 @@ const router = useRouter();
 const checkoutStore = useCheckoutStore();
 
 const endereco = ref({
+  zipCode: '',
   street: '',
   number: '',
   complement: '',
-  neighbordhood: '',
+  neighborhood: '',
   city: '',
   state: '',
   country: 'Brasil',
-  clientId: authService.getCurrentUser()?.id
+  clientId: authService.getCurrentUser().id
 });
 const enderecoSalvo = ref(null);
 const mostrarFormulario = ref(true);
@@ -131,7 +132,7 @@ const rules = computed(() => ({
     street: { required, minLength: minLength(3) },
     number: { required, numeric, minLength: minLength(1), maxLength: maxLength(5) },
     complement: { minLength: minLength(2) },
-    neighbordhood: { required, minLength: minLength(2) },
+    neighborhood: { required, minLength: minLength(2) },
     city: { required, minLength: minLength(2) },
     state: { required }
   }
@@ -152,11 +153,11 @@ onMounted(async () => {
   try {
     const enderecoEncontrado = await enderecoService.buscarPorUsuario(currentUser.id);
     const possuiEnderecoSalvo = enderecoEncontrado && 
-      ['zipCode', 'street', 'number', 'neighbordhood', 'city', 'state', 'country'].every((campo) => !!enderecoEncontrado[campo]);
+      ['zipCode', 'street', 'number', 'neighborhood', 'city', 'state', 'country'].every((campo) => !!enderecoEncontrado[campo]);
 
     if (possuiEnderecoSalvo) {
       enderecoSalvo.value = { ...enderecoEncontrado };
-      endereco.value = { ...endereco.value };
+      endereco.value = { ...endereco.value, ...enderecoEncontrado };
       mostrarFormulario.value = false;
     }
   } catch (err) {
@@ -168,8 +169,11 @@ onMounted(async () => {
 
 
 const buscarCep = async () => {
-  const cepLimpo = endereco.value.cep.replace(/\D/g, '');
-  endereco.value.cep = cepLimpo;
+  if (!endereco.value.zipCode) {
+    return;
+  }
+  const cepLimpo = endereco.value.zipCode.replace(/\D/g, '');
+  endereco.value.zipCode = cepLimpo;
 
   if (cepLimpo.length === 8) {
     try {
@@ -178,7 +182,7 @@ const buscarCep = async () => {
 
       if (!data.erro) {
         endereco.value.street = data.logradouro;
-        endereco.value.neighbordhood = data.bairro;
+        endereco.value.neighborhood = data.bairro;
         endereco.value.city = data.localidade;
         endereco.value.state = data.uf;
         endereco.value.country = 'Brasil';
@@ -212,11 +216,23 @@ const salvarEndereco = async () => {
 
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
-    try {
-      await enderecoService.atualizar( enderecoSalvo.id, ...endereco );
-      enderecoSalvo.value = { ...endereco.value };
-    } catch (err) {
-      console.error('Erro ao salvar endereço do usuário:', err);
+    const enderecoAtual = await enderecoService.buscarPorUsuario(currentUser.id);
+    if (enderecoAtual) {
+      try {
+        await enderecoService.atualizar(enderecoAtual.id, endereco.value);
+      } catch (error) {
+        console.error('Erro ao atualizar endereço:', error);
+        mensagemErro.value = 'Ocorreu um erro ao atualizar o endereço. Tente novamente.';
+        return;
+      }
+    } else {
+      try {
+        await enderecoService.criar(endereco.value);
+      } catch (error) {
+        console.error('Erro ao salvar endereço:', error);
+        mensagemErro.value = 'Ocorreu um erro ao salvar o endereço. Tente novamente.';
+        return;
+      }
     }
   }
 
