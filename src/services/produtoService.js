@@ -130,6 +130,24 @@ export const produtoService = {
       throw new Error("Não foi possível atualizar o produto");
     }
   },
+  async ativar(id) {
+    try {
+      await axiosInstance.patch(`/products/${id}/activate`);
+      return true;
+    } catch (error) {
+      console.error("Erro ao ativar produto:", error);
+      throw new Error("Não foi possível ativar o produto");
+    }
+  },
+  async desativar(id) {
+    try {
+      await axiosInstance.patch(`/products/${id}/deactivate`);
+      return true;
+    } catch (error) {
+      console.error("Erro ao desativar produto:", error);
+      throw new Error("Não foi possível desativar o produto");
+    }
+  },
 
   async deletar(id) {
     try {

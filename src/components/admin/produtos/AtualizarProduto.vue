@@ -43,13 +43,7 @@
             <label for="descricao">Descrição</label>
             <textarea id="descricao" v-model="produto.description" rows="4" required></textarea>
           </div>
-
-          <div>
-            <label for="ativo">
-              <input id="ativo" v-model="produto.active" type="checkbox" />
-              Produto ativo
-            </label>
-          </div>
+          
         </section>
 
         <section class="form-section">
@@ -60,7 +54,7 @@
             <div class="imagens-grid">
               <div v-for="(imagem, index) in imagensExistentes" :key="index" class="imagem-item">
                 <img :src="imagem.url" alt="Imagem do produto" />
-                <button type="button" @click="removerImagemExistente(index)">Remover</button>
+                <button type="button" @click="removerImagemExistente(index)">X</button>
               </div>
             </div>
           </div>
@@ -88,7 +82,8 @@
 
         <div class="form-actions">
           <button type="button" @click="cancelarEdicao" class="btn-secondary">Cancelar edição</button>
-          <button type="button" @click="desabilitarProduto" class="btn-warning">Desabilitar produto</button>
+          <button type="button" @click="desativarProduto" class="btn-warning" v-if="produto.active">Desativar produto</button>
+          <button type="button" @click="ativarProduto" class="btn-success" v-else>Ativar produto</button>
           <button type="button" @click="excluirProduto" class="btn-danger">Excluir</button>
           <button type="submit" class="btn-primary">Salvar alterações</button>
         </div>
@@ -112,12 +107,11 @@ const produto = ref({
   category: '',
   description: '',
   quantity: null,
-  active: true
+  active: true,
 });
 
 const imagensExistentes = ref([]);
 const arquivosNovos = ref([]);
-const fileInput = ref(null);
 
 onMounted(async () => {
   const produtoId = route.params.id;
@@ -130,7 +124,7 @@ onMounted(async () => {
       color: produtoData.cor || '',
       description: produtoData.descricao || '',
       quantity: produtoData.estoque || null,
-      active: produtoData.ativo !== false 
+      active: produtoData.ativo,
     };
     imagensExistentes.value = produtoData.imagens || [];
   } catch (error) {
@@ -179,18 +173,32 @@ const cancelarEdicao = () => {
   router.go(-1);
 };
 
-const desabilitarProduto = async () => {
-  const produtoId = route.params.id;
-  try {
-    await produtoService.atualizar(produtoId, { ativo: false });
-    produto.value.ativo = false;
-    alert('Produto desabilitado com sucesso!');
-  } catch (error) {
-    console.error('Erro ao desabilitar produto:', error);
-    alert('Erro ao desabilitar produto: ' + error.message);
-  }
+const desativarProduto = async () => {
+  if (confirm('Tem certeza que deseja desativar este produto? Ele não ficará mais visível para os clientes, mas poderá ser reativado posteriormente.')) {
+    const produtoId = route.params.id;
+    try {
+      await produtoService.desativar(produtoId);
+      alert('Produto desativado com sucesso!');
+      router.push('/admin/produtos');
+    } catch (error) {
+      console.error('Erro ao desativar produto:', error);
+      alert('Erro ao desativar produto: ' + error.message);
+    }
+  }
 };
-
+const ativarProduto = async () => {
+  if (confirm('Tem certeza que deseja ativar este produto? Ele ficará visível para os clientes novamente.')) {
+    const produtoId = route.params.id;
+    try {
+      await produtoService.ativar(produtoId);
+      alert('Produto ativado com sucesso!');
+      router.push('/admin/produtos');
+    } catch (error) {
+      console.error('Erro ao ativar produto:', error);
+      alert('Erro ao ativar produto: ' + error.message);
+    }
+  }
+};
 const excluirProduto = async () => {
   if (confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) {
     const produtoId = route.params.id;
