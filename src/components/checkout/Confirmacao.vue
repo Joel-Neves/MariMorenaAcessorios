@@ -50,25 +50,31 @@
     <div class="forma-pagamento">
       <h3>Forma de Pagamento</h3>
       <div class="pagamento-info">
-        <div v-if="pagamento.metodo === 'cartao'" class="cartao-info">
+        <div v-if="pagamento.method === 'CARTAO_CREDITO'" class="cartao-info">
           <i class="fas fa-credit-card"></i>
           <span>Cartão de Crédito</span>
           <p>Entraremos em contato em até 24 horas</p>
         </div>
-        <div v-else-if="pagamento.metodo === 'pix'" class="pix-info">
+        <div v-if="pagamento.method === 'CARTAO_DEBITO'" class="cartao-info">
+          <i class="fas fa-credit-card"></i>
+          <span>Cartão de Débito</span>
+          <p>Entraremos em contato em até 24 horas</p>
+        </div>
+        <div v-else-if="pagamento.method === 'PIX'" class="pix-info">
           <i class="fas fa-qrcode"></i>
           <span>PIX</span>
           <p>Pagamento instantâneo</p>
         </div>
-        <div v-else-if="pagamento.metodo === 'boleto'" class="boleto-info">
+        <div v-else-if="pagamento.method === 'BOLETO'" class="boleto-info">
           <i class="fas fa-barcode"></i>
           <span>Boleto Bancário</span>
           <p>Prazo de compensação: até 3 dias úteis</p>
         </div>
       </div>
+
     </div>
 
-    <div v-if="pagamento.metodo === 'pix'" class="pix-qrcode">
+    <div v-if="pagamento.method === 'PIX'" class="pix-qrcode">
       <h3>QR Code para Pagamento</h3>
       <div class="qrcode-placeholder">
         <i class="fas fa-qrcode"></i>
@@ -95,7 +101,7 @@ import { useSacolaStore } from '@/stores/sacolaStore';
 import { useCheckoutStore } from '@/stores/checkoutStore';
 import { pedidoService } from '@/services/pedidoService';
 import { authService } from '@/services/authService';
-import { produtoService } from '@/services/produtoService';
+import { useProdutoStore } from '@/stores/produtoStore';
 import { pagamentoService } from '@/services/pagamentoService';
 
 const router = useRouter();
@@ -142,25 +148,26 @@ const finalizarPedido = async () => {
         productId: item.id,
         quantity: item.quantidade
       })),
-      amount: Number(totalComFrete.value.toFixed(2)),
-      orderStatus: 'PENDING',
+      amount: totalComFrete.value,
+      orderStatus: 'PENDENTE',
       createdAt: new Date().toISOString()
     };    
     const pedidoCriado = await pedidoService.criar(pedido);
 
     const pagamentoInfo = {
       orderId: pedidoCriado.id,
-      paymentMethod: pagamento.value.metodo,
+      paymentMethod: pagamento.value.method,
       amount: pedidoCriado.amount,
-      paymentStatus: 'PENDING',
+      paymentStatus: 'PENDENTE',
     };
     await pagamentoService.criar(pagamentoInfo);
 
     for (const item of itensSacola.value) {
-      const produto = await produtoService.buscarPorId(item.id);
-      await produtoService.atualizar(item.id, {
-        quantity: produto.quantidade - item.quantidade
-      });
+      const produto = await useProdutoStore().carregarProduto(item.id);
+      if (produto) {
+        const novoEstoque = produto.estoque - item.quantidade;
+        await useProdutoStore().atualizarProduto(item.id, { ...produto, estoque: novoEstoque });
+      }
     }
 
     checkoutStore.setPedido(pedidoCriado);

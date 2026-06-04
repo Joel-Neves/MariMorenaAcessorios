@@ -15,8 +15,8 @@
           <label class="opcao-pagamento">
             <input
               type="radio"
-              value="pix"
-              v-model="pagamento.metodo"
+              value="PIX"
+              v-model="pagamento.method"
               required
             />
             <div class="opcao-content">
@@ -28,8 +28,8 @@
           <label class="opcao-pagamento">
             <input
               type="radio"
-              value="boleto"
-              v-model="pagamento.metodo"
+              value="BOLETO"
+              v-model="pagamento.method"
             />
             <div class="opcao-content">
               <i class="fas fa-barcode"></i>
@@ -39,19 +39,31 @@
           <label class="opcao-pagamento">
             <input
               type="radio"
-              value="cartao"
-              v-model="pagamento.metodo"
+              value="CARTAO_CREDITO"
+              v-model="pagamento.method"
             />
             <div class="opcao-content">
-              <i class="fas fa-barcode"></i>
-              <span>Cartão</span>
+              <i class="fas fa-credit-card"></i>
+              <span>Cartão de Crédito</span>
+            </div>
+            <p style="font-size: 10px"> Sujeito ao pequeno acréscimo</p>
+          </label>
+          <label class="opcao-pagamento">
+            <input
+              type="radio"
+              value="CARTAO_DEBITO"
+              v-model="pagamento.method"
+            />
+            <div class="opcao-content">
+              <i class="fas fa-credit-card"></i>
+              <span>Cartão de Débito</span>
             </div>
             <p style="font-size: 10px"> Sujeito ao pequeno acréscimo</p>
           </label>
         </div>
       </div>
 
-      <div v-if="pagamento.metodo === 'pix'" class="dados-pix">
+      <div v-if="pagamento.method === 'PIX'" class="dados-pix">
         <h3>Pagamento via PIX</h3>
         <p>O pagamento será processado manualmente após a confirmação do pedido. Você receberá as instruções por e-mail ou Whatsapp.</p>
         <div class="pix-info">
@@ -60,7 +72,7 @@
         </div>
       </div>
 
-      <div v-if="pagamento.metodo === 'boleto'" class="dados-boleto">
+      <div v-if="pagamento.method === 'BOLETO'" class="dados-boleto">
         <h3>Pagamento via Boleto</h3>
         <p>O pagamento será processado manualmente após a confirmação do pedido. Você receberá as instruções por e-mail ou Whatsapp.</p>
         <div class="boleto-info">
@@ -68,7 +80,15 @@
           <span>As informações de pagamento serão enviadas após a finalização do pedido</span>
         </div>
       </div>
-      <div v-if="pagamento.metodo === 'cartao'" class="dados-boleto">
+      <div v-if="pagamento.method === 'CARTAO_CREDITO'" class="dados-boleto">
+        <h3>Pagamento via Cartão</h3>
+        <p>O pagamento será processado manualmente após a confirmação do pedido. Você receberá as instruções por e-mail ou Whatsapp.</p>
+        <div class="boleto-info">
+          <i class="fas fa-info-circle"></i>
+          <span>As informações de pagamento serão enviadas após a finalização do pedido</span>
+        </div>
+      </div>
+      <div v-if="pagamento.method === 'CARTAO_DEBITO'" class="dados-boleto">
         <h3>Pagamento via Cartão</h3>
         <p>O pagamento será processado manualmente após a confirmação do pedido. Você receberá as instruções por e-mail ou Whatsapp.</p>
         <div class="boleto-info">
@@ -79,7 +99,7 @@
 
       <div class="form-actions">
         <button type="button" @click="voltar" class="btn-voltar">Voltar</button>
-        <button type="submit" :disabled="!pagamento.metodo" class="btn-proximo">Revisar Pedido</button>
+        <button type="submit" :disabled="!pagamento.method" class="btn-proximo">Revisar Pedido</button>
       </div>
     </form>
   </div>
@@ -94,7 +114,7 @@ const router = useRouter();
 const checkoutStore = useCheckoutStore();
 
 const pagamento = reactive({
-  metodo: ''
+  method: ''
 });
 
 const salvarPagamento = () => {

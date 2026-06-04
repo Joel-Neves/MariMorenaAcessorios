@@ -104,6 +104,17 @@ export const produtoService = {
       throw new Error("Não foi possível cadastrar o produto");
     }
   },
+  async atualizarEstoque(id, novaQuantidade) {
+    try {
+      const response = await axiosInstance.patch(`/products/${id}/quantity`, {
+        quantity: novaQuantidade
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao atualizar estoque:", error);
+      throw new Error("Não foi possível atualizar o estoque");
+    }
+  },
 
   async atualizar(id, dadosAtualizados, arquivos) {
     try {
