@@ -31,27 +31,23 @@
 </template>
 
 <script setup>
+import { ref, computed, watch } from 'vue';
 import { produtoService } from '@/services/produtoService';
-import { ref, watch} from 'vue';
-import { computed } from 'vue';
-const props = defineProps({
-  pedido: {
-    type: Object,
-    required: true
-  }
-});
-const produto = ref(null);
 
-const firstItem = computed(() => {
-  return props.pedido.orderItems?.[0] || null;
+const props = defineProps({
+  pedido: { type: Object, required: true }
 });
-const totalQuantidade = computed(() => {
-  return props.pedido.orderItems?.reduce((total, item) => total + item.quantity, 0) || 0;
-});
+
+const firstItem = computed(() => props.pedido.orderItems?.[0] || null);
+const totalQuantidade = computed(() =>
+  props.pedido.orderItems?.reduce((total, item) => total + (item.quantity ?? 0), 0) || 0
+);
+
+const produto = ref(null);
 
 async function loadProduto() {
   const item = firstItem.value;
-  if (item) {
+  if (item && item.productId) {
     try {
       produto.value = await produtoService.buscarPorId(item.productId);
     } catch (e) {
@@ -64,8 +60,6 @@ async function loadProduto() {
 }
 
 watch(firstItem, loadProduto, { immediate: true });
-
-
 </script>
 
 <style scoped>

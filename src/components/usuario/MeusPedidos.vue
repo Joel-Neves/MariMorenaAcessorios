@@ -8,11 +8,11 @@
         <label for="status-filter">Filtrar por Status:</label>
         <select id="status-filter" v-model="statusFilter" @change="filtrarPedidos">
           <option value="">Todos</option>
-          <option value="pendente">Pendente</option>
-          <option value="processando">Processando</option>
-          <option value="enviado">Enviado</option>
-          <option value="entregue">Entregue</option>
-          <option value="cancelado">Cancelado</option>
+          <option value="PENDENTE">Pendente</option>
+          <option value="CONFIRMADO">Confirmado</option>
+          <option value="ENVIADO">Enviado</option>
+          <option value="ENTREGUE">Entregue</option>
+          <option value="CANCELADO">CANCELADO</option>
         </select>
       </div>
       <div class="search-group">
@@ -50,29 +50,31 @@
     <!-- Modal de Detalhes -->
     <div v-if="pedidoSelecionado" class="modal-overlay" @click="fecharModal">
       <div class="modal-content" @click.stop>
-        <h3>Detalhes do Pedido #{{ pedidoSelecionado.numeroPedido || pedidoSelecionado.id }}</h3>
+       <h3>Detalhes do Pedido #{{ pedidoSelecionado.id }}</h3>
         <div class="pedido-detalhes">
           <div class="detalhe-item">
-            <strong>Status:</strong> <span :class="`status status-${pedidoSelecionado.status}`">{{
-              getStatusLabel(pedidoSelecionado.status) }}</span>
+            <strong>Status:</strong>
+            <span :class="`status status-${pedidoSelecionado.orderStatus}`">{{ pedidoSelecionado.orderStatus }}</span>
           </div>
           <div class="detalhe-item">
-            <strong>Data:</strong> {{ pedidoSelecionado.dataCriacao }}
+            <strong>Data:</strong> {{ pedidoSelecionado.createdAt ? new
+              Date(pedidoSelecionado.createdAt).toLocaleString() : '' }}
           </div>
           <div class="detalhe-item">
-            <strong>Total:</strong> R$ {{ pedidoSelecionado.total ? pedidoSelecionado.total.toFixed(2) : '0.00' }}
+            <strong>Total:</strong> R$ {{ (pedidoSelecionado.amount ?? 0).toFixed(2) }}
           </div>
           <div class="detalhe-item">
             <strong>Itens:</strong>
             <ul class="itens-lista">
-              <li v-for="item in pedidoSelecionado.itens" :key="item.id">
-                <img v-if="item.produto && item.produto.imagens[0].url" :src="item.produto.imagens[0].url"
-                  :alt="item.produto.nome" class="item-imagem" />
-                <span>{{ item.produto ? item.produto.nome : 'Produto' }} - Quantidade: {{ item.quantidade }} - R$ {{
-                  item.produto.preco ? item.produto.preco.toFixed(2) : '0.00' }}</span>
+              <li v-for="item in pedidoSelecionado.orderItems" :key="item.productId">
+                <img v-if="item.produto?.imagens?.[0]?.url" :src="item.produto.imagens[0].url" :alt="item.produto.nome"
+                  class="item-imagem" />
+                <span>{{ item.produto?.nome || 'Produto' }} - Quantidade: {{ item.quantity }} - R$ {{
+                  item.produto?.preco ? item.produto.preco.toFixed(2) : '0.00' }}</span>
               </li>
             </ul>
           </div>
+        </div>
           <div v-if="podeCancelar(pedidoSelecionado)" class="detalhe-item">
             <button @click="cancelarPedido(pedidoSelecionado)" class="btn-cancelar">Cancelar Pedido</button>
           </div>
@@ -86,7 +88,6 @@
         </div>
         <button @click="fecharModal" class="btn-fechar">Fechar</button>
       </div>
-    </div>
   </div>
 </template>
 
@@ -103,6 +104,7 @@ const loading = ref(false);
 const statusFilter = ref('');
 const searchQuery = ref('');
 const pedidoSelecionado = ref(null);
+const produto = ref(null);
 
 onMounted(async () => {
   await carregarPedidos();
@@ -117,35 +119,30 @@ const carregarPedidos = async () => {
   try {
     const userPedidos = await pedidoService.buscarPorUsuario(currentUser.id);
 
-    userPedidos.forEach(pedido => {
-      pedido.itens = Array.isArray(pedido.itens)
-        ? pedido.itens
-        : Object.values(pedido.itens || {});
-    });
-
-    const produtoIds = new Set();
+    // coletar productIds únicos
+    const productIds = new Set();
     userPedidos.forEach(p => {
-      p.itens.forEach(i => i.produtoId && produtoIds.add(i.produtoId));
+      p.orderItems?.forEach(i => i.productId && productIds.add(i.productId));
     });
 
+    // buscar produtos em paralelo
     const produtos = await Promise.all(
-      [...produtoIds].map(id =>
-        produtoService.buscarPorId(id).then(prod => ({ id, prod }))
+      [...productIds].map(id =>
+        produtoService.buscarPorId(id).then(prod => ({ id, prod })).catch(() => ({ id, prod: null }))
       )
     );
 
     const produtoMap = new Map(produtos.map(p => [p.id, p.prod]));
 
-    // Associar produtos aos itens
+    // associar produtos aos itens
     userPedidos.forEach(pedido => {
-      pedido.itens.forEach(item => {
-        item.produto = produtoMap.get(item.produtoId) || null;
+      pedido.orderItems?.forEach(item => {
+        item.produto = produtoMap.get(item.productId) || null;
       });
     });
 
     pedidos.value = userPedidos;
     pedidosFiltrados.value = userPedidos;
-
   } catch (error) {
     console.error("Erro ao carregar pedidos:", error);
   } finally {
@@ -159,34 +156,22 @@ const filtrarPedidos = () => {
 
   // Filtro por status
   if (statusFilter.value) {
-    filtrados = filtrados.filter(pedido => pedido.status === statusFilter.value);
+    filtrados = filtrados.filter(pedido => pedido.orderStatus === statusFilter.value);
   }
 
-  // Busca por número do pedido ou nome do produto
-  if (searchQuery.value.trim()) {
+  // Busca por id do pedido ou nome do produto
+  if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtrados = filtrados.filter(pedido => {
-      const numeroMatch = (pedido.numeroPedido || pedido.id).toLowerCase().includes(query);
-      const produtoMatch = pedido.itens && pedido.itens.some(item =>
-        item.produto && item.produto.nome.toLowerCase().includes(query)
-      );
-      return numeroMatch || produtoMatch;
-    });
+    filtrados = filtrados.filter(pedido =>
+      (pedido.id && pedido.id.toString().includes(query)) ||
+      pedido.orderItems?.some(item =>
+        item.produto && item.produto.nome?.toLowerCase().includes(query)
+      )
+    );
   }
-
   pedidosFiltrados.value = filtrados;
 };
 
-const getStatusLabel = (status) => {
-  const labels = {
-    pendente: 'Pendente',
-    processando: 'Processando',
-    enviado: 'Enviado',
-    entregue: 'Entregue',
-    cancelado: 'Cancelado'
-  };
-  return labels[status] || status;
-};
 
 const verDetalhes = (pedido) => {
   pedidoSelecionado.value = pedido;
@@ -197,25 +182,25 @@ const fecharModal = () => {
 };
 
 const podeCancelar = (pedido) => {
-  return pedido.status === 'pendente';
+  return pedido.orderStatus === 'PENDENTE';
 };
 
 const cancelarPedido = async (pedido) => {
   if (!confirm('Tem certeza que deseja cancelar este pedido?')) return;
-
+  
   try {
-    await pedidoService.atualizar(pedido.id, { status: 'cancelado' });
-    pedido.status = 'cancelado';
 
-    for (const item of pedido.itens) {
-      if (item.produtoId) {
-        const produto = await produtoService.buscarPorId(item.produtoId);
-        const novaQuantidade = (produto.estoque) + (item.estoque);
-        await produtoService.atualizar(item.produtoId, { estoque: novaQuantidade });
+    await pedidoService.atualizarStatus(pedido.id, 'CANCELADO');
+
+    for (const item of pedido.orderItems) {
+      if (item.productId) {
+        const p = await produtoService.buscarPorId(item.productId);
+        const novaQuantidade = (p.estoque ?? 0) + (item.quantity ?? 0);
+        await produtoService.atualizarEstoque(item.productId, novaQuantidade);
       }
     }
 
-    alert('Pedido cancelado com sucesso!');
+    alert('Pedido CANCELADO com sucesso!');
     fecharModal();
     await carregarPedidos(); 
   } catch (error) {
@@ -310,7 +295,7 @@ th {
 .status-processando { background-color: #cce5ff; color: #004085; }
 .status-enviado { background-color: #d1ecf1; color: #0c5460; }
 .status-entregue { background-color: #d4edda; color: #155724; }
-.status-cancelado { background-color: #f8d7da; color: #721c24; }
+.status-CANCELADO { background-color: #f8d7da; color: #721c24; }
 
 .btn-detalhes {
   padding: 0.5rem 1rem;

@@ -54,7 +54,5 @@ export const useSacolaStore = defineStore('sacola', {
     limparSacola() {
       this.itens = [];
     }
-  },
-
-  persist: true
+  }
 });

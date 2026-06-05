@@ -106,9 +106,7 @@ export const produtoService = {
   },
   async atualizarEstoque(id, novaQuantidade) {
     try {
-      const response = await axiosInstance.patch(`/products/${id}/quantity`, {
-        quantity: novaQuantidade
-      });
+      const response = await axiosInstance.patch(`/products/${id}/quantity?quantity=${novaQuantidade}`);
       return response.data;
     } catch (error) {
       console.error("Erro ao atualizar estoque:", error);

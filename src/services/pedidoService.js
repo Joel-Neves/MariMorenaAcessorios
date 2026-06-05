@@ -31,16 +31,6 @@ export const pedidoService = {
     }
   },
 
-  async buscarPorStatus(status) {
-    try {
-      const response = await axiosInstance.get(`/orders/status/${status}`);
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao buscar pedidos por status:', error);
-      throw new Error('Não foi possível buscar os pedidos');
-    }
-  },
-
   async criar(pedido) {
     try {
       const response = await axiosInstance.post('/orders', pedido);
@@ -58,6 +48,15 @@ export const pedidoService = {
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
       throw new Error('Não foi possível atualizar o pedido');
+    }
+  },
+  async atualizarStatus(id, status) {
+    try {
+      const response = await axiosInstance.patch(`/orders/${id}/status?status=${status}`);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      throw new Error('Não foi possível atualizar o status do pedido');
     }
   },
 
