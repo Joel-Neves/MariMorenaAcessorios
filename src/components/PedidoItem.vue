@@ -1,22 +1,22 @@
 <template>
   <tr>
-    <td style="padding-left: 20px;">#{{ pedido.id.substring(0, 10) }}</td>
+    <td style="padding-left: 20px;">#{{ pedido.id }}</td>
 
     <td>
       <div class="produto-info">
         <img
-          v-if="firstItem?.produto?.imagens?.[0]?.url"
-          :src="firstItem.produto.imagens[0].url"
-          :alt="firstItem.produto.nome"
+          v-if="produto?.imagens?.[0]?.url"
+          :src="produto.imagens[0].url"
+          :alt="produto.nome"
           class="produto-imagem"
         />
-        <span>{{ firstItem?.produto?.nome || 'Produto removido' }}</span>
+        <span>{{ produto?.nome || 'Produto removido' }}</span>
       </div>
     </td>
 
     <td>
       <span :class="`status status-${pedido.orderStatus}`">
-        {{ getStatusLabel(pedido.orderStatus) }}
+        {{ (pedido.orderStatus) }}
       </span>
     </td>
 
@@ -31,29 +31,40 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-
+import { produtoService } from '@/services/produtoService';
+import { ref, watch} from 'vue';
+import { computed } from 'vue';
 const props = defineProps({
-  pedido: Object
+  pedido: {
+    type: Object,
+    required: true
+  }
 });
+const produto = ref(null);
 
-const firstItem = computed(() => props.pedido?.orderItems?.[0] || null);
-
+const firstItem = computed(() => {
+  return props.pedido.orderItems?.[0] || null;
+});
 const totalQuantidade = computed(() => {
-  const itens = props.pedido?.orderItems || [];
-  return itens.reduce((sum, item) => sum + (item.quantidade || 0), 0);
+  return props.pedido.orderItems?.reduce((total, item) => total + item.quantity, 0) || 0;
 });
 
-const getStatusLabel = (status) => {
-  const labels = {
-    PENDING: "Pendente",
-    CONFIRMED: "Confirmado",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELLED: "Cancelado",
-  };
-  return labels[status] || status;
-};
+async function loadProduto() {
+  const item = firstItem.value;
+  if (item) {
+    try {
+      produto.value = await produtoService.buscarPorId(item.productId);
+    } catch (e) {
+      produto.value = null;
+      console.error('Erro ao buscar produto:', e);
+    }
+  } else {
+    produto.value = null;
+  }
+}
+
+watch(firstItem, loadProduto, { immediate: true });
+
 
 </script>
 
