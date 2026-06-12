@@ -148,9 +148,9 @@ const finalizarPedido = async () => {
         productId: item.id,
         quantity: item.quantidade
       })),
-      amount: totalComFrete.value,
+      freight: frete.value,
       orderStatus: 'PENDENTE',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toLocaleDateString('sv-SE'),
     };    
     const pedidoCriado = await pedidoService.criar(pedido);
 

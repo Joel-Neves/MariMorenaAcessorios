@@ -57,8 +57,10 @@
             <span :class="`status status-${pedidoSelecionado.orderStatus}`">{{ pedidoSelecionado.orderStatus }}</span>
           </div>
           <div class="detalhe-item">
-            <strong>Data:</strong> {{ pedidoSelecionado.createdAt ? new
-              Date(pedidoSelecionado.createdAt).toLocaleString() : '' }}
+            <strong>Data:</strong> {{ pedidoSelecionado.createdAt }}
+          </div>
+          <div class="detalhe-item">
+            <strong>Frete:</strong> R$ {{ (pedidoSelecionado.freight ?? 0).toFixed(2) }}
           </div>
           <div class="detalhe-item">
             <strong>Total:</strong> R$ {{ (pedidoSelecionado.amount ?? 0).toFixed(2) }}
