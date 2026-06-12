@@ -109,7 +109,7 @@ export const authService = {
   async waitForUser() {
     return new Promise((resolve) => {
       const start = Date.now();
-      const timeout = 1000;
+      const timeout = 500;
 
       const checkUser = () => {
         const user = this.getCurrentUser();
