@@ -32,9 +32,11 @@ coverage
 .env
 .TODO.md
 
+
 # Cypress
 /cypress/videos/
 /cypress/screenshots/
 
 # Vitest
 __screenshots__/
+Modelfile
