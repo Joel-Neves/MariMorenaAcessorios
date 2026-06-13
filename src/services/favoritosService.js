@@ -13,10 +13,7 @@ export const favoritosService = {
 
   async adicionarFavorito(userId, produto) {
     try {
-      return await axiosInstance.post('/favorites', {
-        userId,
-        produtoId: produto.id,
-      });
+      return await axiosInstance.post(`/favorites/${userId}/${produto.id}`);
     } catch (error) {
       console.error('Erro ao adicionar favorito:', error);
       throw error;

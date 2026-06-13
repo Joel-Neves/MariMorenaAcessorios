@@ -23,12 +23,12 @@
       >
         <router-link :to="`/produto/${produto.id}`" class="produto-link">
           <div class="produto-imagem">
-            <img :src="produto.imagens[0].url" :alt="produto.nome" />
+            <img :src="produto.imagens[0]?.url" :alt="produto.nome" />
           </div>
           <div class="produto-info">
             <h3 class="produto-nome">{{ produto.nome }}</h3>
             <p class="produto-categoria">{{ produto.categoria }}</p>
-            <p class="produto-preco">R$ {{ formatarPreco(produto.preco) }}</p>
+            <p class="produto-preco">{{ formatarPreco(produto.preco) }}</p>
           </div>
         </router-link>
         <button
