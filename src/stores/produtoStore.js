@@ -102,6 +102,24 @@ export const useProdutoStore = defineStore('products', {
       } finally {
         this.carregando = false;
       }
+    },
+    async atualizarEstoque(id, quantidade) {
+      this.carregando = true;
+      this.erro = null;
+      try {
+        const produtoAtualizado = await produtoService.atualizarEstoque(id, quantidade);
+        const index = this.produtos.findIndex(p => p.id === id);
+        if (index !== -1) {
+          this.produtos[index] = { ...this.produtos[index], ...produtoAtualizado };
+        }
+        return produtoAtualizado;
+      } catch (error) {
+        this.erro = error.message;
+        console.error('Erro ao atualizar estoque:', error);
+        throw error;
+      } finally {
+        this.carregando = false;
+      }
     }
   }
 });

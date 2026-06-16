@@ -163,10 +163,10 @@ const finalizarPedido = async () => {
     await pagamentoService.criar(pagamentoInfo);
 
     for (const item of itensSacola.value) {
-      const produto = await useProdutoStore().carregarProduto(item.id);
+      const produto = await useProdutoStore().getProdutoPorId(item.id);
       if (produto) {
         const novoEstoque = produto.estoque - item.quantidade;
-        await useProdutoStore().atualizarProduto(item.id, { ...produto, estoque: novoEstoque });
+        await useProdutoStore().atualizarEstoque(item.id, novoEstoque);
       }
     }
 
