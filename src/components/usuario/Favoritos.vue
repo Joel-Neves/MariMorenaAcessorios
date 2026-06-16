@@ -23,12 +23,13 @@
       >
         <router-link :to="`/produto/${produto.id}`" class="produto-link">
           <div class="produto-imagem">
-            <img :src="produto.imagens[0]?.url" :alt="produto.nome" />
+            <img :src="obterUrlImagem(mapProduto(produto))" :alt="produto.name" />
+            
           </div>
           <div class="produto-info">
-            <h3 class="produto-nome">{{ produto.nome }}</h3>
-            <p class="produto-categoria">{{ produto.categoria }}</p>
-            <p class="produto-preco">{{ formatarPreco(produto.preco) }}</p>
+            <h3 class="produto-nome">{{ produto.name }}</h3>
+            <p class="produto-categoria">{{ produto.category }}</p>
+            <p class="produto-preco">{{ formatarPreco(produto.price) }}</p>
           </div>
         </router-link>
         <button
@@ -46,16 +47,14 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import { useFavoritosStore } from '../../stores/favoritosStore';
+import { formatarPreco, obterUrlImagem, mapProduto } from '@/services/produtoService';
 
 const favoritosStore = useFavoritosStore();
 
 const carregando = computed(() => favoritosStore.carregando);
 const erro = computed(() => favoritosStore.erro);
-const favoritosComProdutos = computed(() => favoritosStore.favoritosComProdutos);
+const favoritosComProdutos = computed(() => favoritosStore.produtosFavoritos);
 
-const formatarPreco = (preco) => {
-  return preco.toFixed(2).replace('.', ',');
-};
 
 const removerFavorito = async (produtoId) => {
   try {
@@ -65,8 +64,8 @@ const removerFavorito = async (produtoId) => {
   }
 };
 
-onMounted(() => {
-  favoritosStore.carregarFavoritos();
+onMounted(async () => {
+  await favoritosStore.carregarFavoritos();
 });
 </script>
 

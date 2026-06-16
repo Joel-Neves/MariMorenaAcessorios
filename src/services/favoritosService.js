@@ -6,16 +6,15 @@ export const favoritosService = {
       const response = await axiosInstance.get(`/favorites/${userId}`);
       return response.data;
     } catch (error) {
-      console.error('Erro ao carregar favoritos:', error);
       throw error;
     }
   },
 
   async adicionarFavorito(userId, produto) {
     try {
-      return await axiosInstance.post(`/favorites/${userId}/${produto.id}`);
+      const response = await axiosInstance.post(`/favorites/${userId}/${produto.id}`);
+      return response.data;
     } catch (error) {
-      console.error('Erro ao adicionar favorito:', error);
       throw error;
     }
   },
@@ -24,7 +23,14 @@ export const favoritosService = {
     try {
       await axiosInstance.delete(`/favorites/${favoritoId}`);
     } catch (error) {
-      console.error('Erro ao remover favorito:', error);
+      throw error;
+    }
+  },
+  async favoritado(userId, produtoId) {
+    try {
+      const response = await axiosInstance.get(`/favorites/${userId}/${produtoId}`);
+      return response.data.favoritado;
+    } catch (error) {
       throw error;
     }
   }

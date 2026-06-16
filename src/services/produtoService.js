@@ -7,7 +7,7 @@ function normalizarUrlImagem(url) {
   return `${API_BASE_URL}${url}`;
 }
 
-function mapProduto(data) {
+export function mapProduto(data) {
   const imagens = data.imageUrls.map((img) => ({
     url: normalizarUrlImagem(img),
   }));

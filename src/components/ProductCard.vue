@@ -15,7 +15,7 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path :d="mdiHeart"/>
         </svg>
-        {{ isFavorito ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
+        {{ favoritado ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos' }}
       </button>
       <button class="btn-add-cart" @click="adicionarNaSacola">
         Adicionar à Sacola
@@ -27,7 +27,7 @@
 <script setup>
 import { useSacolaStore } from '../stores/sacolaStore';
 import { useFavoritosStore } from '../stores/favoritosStore';
-import { formatarPreco, obterUrlImagem } from '@/services/produtoService'
+import { formatarPreco, obterUrlImagem } from '@/services/produtoService';
 import { computed } from 'vue';
 import { mdiHeart } from '@mdi/js';
 
@@ -41,7 +41,7 @@ const props = defineProps({
 const sacolaStore = useSacolaStore();
 const favoritosStore = useFavoritosStore();
 
-const isFavorito = computed(() => favoritosStore.isFavorito(props.produto.id));
+const favoritado = computed(() => favoritosStore.isFavorito(props.produto.id));
 
 
 const adicionarNaSacola = () => {
@@ -50,7 +50,7 @@ const adicionarNaSacola = () => {
 
 const toggleFavorito = async () => {
   try {
-    if (isFavorito.value) {
+    if (favoritado.value) {
       await favoritosStore.removerFavorito(props.produto.id);
     } else {
       await favoritosStore.adicionarFavorito(props.produto);

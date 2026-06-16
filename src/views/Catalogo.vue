@@ -46,6 +46,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useProdutoStore } from '@/stores/produtoStore';
 import ProductCard from '@/components/ProductCard.vue';
+import { useFavoritosStore } from '@/stores/favoritosStore';
+import authService from '@/services/authService';
 
 const produtoStore = useProdutoStore();
 const categoriaSelecionada = ref(null);
@@ -68,6 +70,10 @@ const filtrarCategoria = (category) => {
 
 onMounted(async () => {
   await produtoStore.carregarProdutos();
+    if(authService.isAuthenticated()) {
+      const favoritosStore = useFavoritosStore();
+      await favoritosStore.carregarFavoritos();
+  }
 });
 </script>
 
