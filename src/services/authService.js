@@ -133,23 +133,38 @@ export const authService = {
 
   /**
    * Validar autenticação com o backend
-   * Retorna usuário se autenticado, lança erro se não
+   * Retorna usuário se autenticado, null se não autenticado, lança erro em falhas de rede
    */
   async verifyAuth() {
     try {
-      const response = await axiosInstance.get('/auth/me');
-      const user = response?.data ?? response ?? null;
+      const response = await axiosInstance.get("/auth/me");
+      
+      // Extrai o usuário priorizando a estrutura { user: ... } (consistente com login)
+      const user = response?.data?.user ?? response?.data ?? response ?? null;
+      
       if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        return user;
       }
-      return user;
+      
+      // Resposta 200 sem dados de usuário = não autenticado
+      localStorage.removeItem("currentUser");
+      return null;
     } catch (error) {
-      localStorage.removeItem('currentUser');
+      localStorage.removeItem("currentUser");
+      
+      // Redireciona apenas em erros de autenticação (401/403), não em falhas de rede
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
-        return null;
+        const path = window.location.pathname;
+        if (path !== '/login' && path !== '/') {
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 500);
+        }
       }
-      throw error;
+      
+      throw new Error(error?.response?.data?.message || error?.message || 'Erro ao verificar autenticação');
     }
   }
 };

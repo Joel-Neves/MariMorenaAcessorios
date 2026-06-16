@@ -42,13 +42,14 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useSacolaStore } from '../stores/sacolaStore';
 import { authService } from '@/services/authService';
-import { usuarioService } from '@/services/usuarioService';
 import { mdiAccountCircle, mdiHeart, mdiHome, mdiShopping } from '@mdi/js';
 import AvatarDefault from '@/assets/default-avatar.png';
 
+const route = useRoute();
 const sacolaStore = useSacolaStore();
 const totalItens = computed(() => sacolaStore.totalItens);
 const dropdownOpen = ref(false);
@@ -59,16 +60,25 @@ function isAdmin(){
   return usuario.value?.userRole === 'ADMIN';
 }
 
-onMounted(async () => {
+async function verificarAutenticacao() {
   try {
-    eAutenticado.value = !!(await authService.waitForUser());
-    if (eAutenticado.value) {
-      const user = authService.getCurrentUser();
-      usuario.value = await authService.getCurrentUser(user.id);
+    const user = await authService.verifyAuth();
+    if (user) {
+      eAutenticado.value = true;
+      usuario.value = user;
+    } else {
+      eAutenticado.value = false;
+      usuario.value = null;
     }
-  } catch (error) {
-    console.error('Erro ao obter usuário:', error);
+  } catch {
+    // verifyAuth lança erro em 401/403 — significa não autenticado
+    eAutenticado.value = false;
+    usuario.value = null;
   }
+}
+
+onMounted(() => {
+  verificarAutenticacao();
 });
 
 
