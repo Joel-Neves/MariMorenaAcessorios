@@ -16,7 +16,13 @@ export const enderecoService = {
             return response.data;
         } catch (error) {
             console.error('Erro ao criar endereço:', error);
-            throw new Error('Não foi possível criar o endereço');
+            // Extrai a mensagem real do backend para facilitar o debug
+            const backendMsg = error?.response?.data?.message 
+                || error?.response?.data?.error 
+                || error?.response?.statusText 
+                || 'Não foi possível criar o endereço';
+            console.error('Mensagem do backend:', backendMsg);
+            throw new Error(backendMsg);
         }
     },
 
@@ -32,7 +38,14 @@ export const enderecoService = {
     async buscarPorUsuario(clientId) {
         try {
             const response = await axiosInstance.get(`/addresses/client/${clientId}`);
-            return response?.data || null; // Retorna null se não houver endereço para o usuário
+            const data = response?.data;
+            // Garante que sempre retorna um array
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data) {
+                return [data]; // Objeto único vira array com 1 elemento
+            }
+            return []; // Nulo/undefined vira array vazio
         } catch (error) {
             console.error('Erro ao buscar endereço por usuário:', error);
             throw new Error('Não foi possível buscar o endereço');
@@ -45,7 +58,11 @@ export const enderecoService = {
             return response.data;
         } catch (error) {
             console.error('Erro ao atualizar endereço:', error);
-            throw new Error('Não foi possível atualizar o endereço');
+            const backendMsg = error?.response?.data?.message 
+                || error?.response?.data?.error 
+                || error?.response?.statusText 
+                || 'Não foi possível atualizar o endereço';
+            throw new Error(backendMsg);
         }
     },
 

@@ -102,7 +102,6 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCheckoutStore } from '@/stores/checkoutStore';
 import { authService } from '@/services/authService';
-import { usuarioService } from '@/services/usuarioService';
 import { useVuelidate } from '@vuelidate/core';
 import { required, numeric, minLength, maxLength } from '@vuelidate/validators';
 import { enderecoService } from '@/services/enderecoService';
@@ -120,7 +119,7 @@ const endereco = ref({
   city: '',
   state: '',
   country: 'Brasil',
-  clientId: authService.getCurrentUser().id
+  clientId: authService.getCurrentUser()?.id
 });
 const enderecoSalvo = ref(null);
 const mostrarFormulario = ref(true);
@@ -151,7 +150,9 @@ onMounted(async () => {
   }
 
   try {
-    const enderecoEncontrado = await enderecoService.buscarPorUsuario(currentUser.id);
+    const enderecosEncontrados = await enderecoService.buscarPorUsuario(currentUser.id);
+    // Pega o primeiro endereço da lista (compatibilidade com versão anterior)
+    const enderecoEncontrado = enderecosEncontrados && enderecosEncontrados.length > 0 ? enderecosEncontrados[0] : null;
     const possuiEnderecoSalvo = enderecoEncontrado && 
       ['zipCode', 'street', 'number', 'neighborhood', 'city', 'state', 'country'].every((campo) => !!enderecoEncontrado[campo]);
 
@@ -164,9 +165,6 @@ onMounted(async () => {
     console.error("Erro ao carregar dados do usuário:", err);
   }
 });
-
-
-
 
 const buscarCep = async () => {
   if (!endereco.value.zipCode) {
@@ -216,23 +214,19 @@ const salvarEndereco = async () => {
 
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
-    const enderecoAtual = await enderecoService.buscarPorUsuario(currentUser.id);
-    if (enderecoAtual) {
-      try {
+    try {
+      const enderecosAtuais = await enderecoService.buscarPorUsuario(currentUser.id);
+      // Pega o primeiro endereço da lista
+      const enderecoAtual = enderecosAtuais && enderecosAtuais.length > 0 ? enderecosAtuais[0] : null;
+      if (enderecoAtual && enderecoAtual.id) {
         await enderecoService.atualizar(enderecoAtual.id, endereco.value);
-      } catch (error) {
-        console.error('Erro ao atualizar endereço:', error);
-        mensagemErro.value = 'Ocorreu um erro ao atualizar o endereço. Tente novamente.';
-        return;
-      }
-    } else {
-      try {
+      } else {
         await enderecoService.criar(endereco.value);
-      } catch (error) {
-        console.error('Erro ao salvar endereço:', error);
-        mensagemErro.value = 'Ocorreu um erro ao salvar o endereço. Tente novamente.';
-        return;
       }
+    } catch (error) {
+      console.error('Erro ao salvar endereço:', error);
+      mensagemErro.value = error.message || 'Ocorreu um erro ao salvar o endereço. Tente novamente.';
+      return;
     }
   }
 
