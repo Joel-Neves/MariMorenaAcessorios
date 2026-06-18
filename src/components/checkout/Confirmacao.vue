@@ -103,6 +103,7 @@ import { pedidoService } from '@/services/pedidoService';
 import { authService } from '@/services/authService';
 import { useProdutoStore } from '@/stores/produtoStore';
 import { pagamentoService } from '@/services/pagamentoService';
+import { enderecoService } from '@/services/enderecoService';
 
 const router = useRouter();
 const sacolaStore = useSacolaStore();
@@ -141,6 +142,17 @@ const finalizarPedido = async () => {
       router.push('/perfil');
       return;
     }
+    const enderecoInfo = {
+      street: endereco.value.street,
+      number: endereco.value.number,
+      complement: endereco.value.complement,
+      neighborhood: endereco.value.neighborhood,
+      city: endereco.value.city,
+      state: endereco.value.state,
+      zipCode: endereco.value.zipCode,
+      clientId: user.id
+    };
+    const enderecoCriado = await enderecoService.criar(enderecoInfo);
 
     const pedido = {
       clientId: user.id,
@@ -150,7 +162,8 @@ const finalizarPedido = async () => {
       })),
       freight: frete.value,
       orderStatus: 'PENDENTE',
-      createdAt: new Date().toLocaleDateString('sv-SE'),
+      addressId: enderecoCriado.id,
+      createdAt: new Date().toLocaleDateString('sv-SE')
     };    
     const pedidoCriado = await pedidoService.criar(pedido);
 
