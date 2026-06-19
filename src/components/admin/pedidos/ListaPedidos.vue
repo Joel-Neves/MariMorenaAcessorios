@@ -27,10 +27,10 @@
         </thead>
         <tbody>
           <tr v-for="pedido in filteredPedidos" :key="pedido.id">
-            <td>#{{ pedido.id.slice(-8) }}</td>
+            <td>#{{ pedido.id }}</td>
             <td>{{ pedido.clienteNome || 'Cliente não encontrado' }}</td>
-            <td>{{ pedido.dataCriacao }}</td>
-            <td>{{ pedido.valorFormatado }}</td>
+            <td>{{ pedido.createdAt }}</td>
+            <td>{{ pedido.valorTotal }}</td>
             <td>{{ pedido.status }}</td>
             <td>
               <router-link :to="{ name: 'pedido-detalhes', params: { id: pedido.id } }" class="btn-detalhes">
@@ -55,56 +55,50 @@ const error = ref(null)
 const searchTerm = ref('')
 
 const filteredPedidos = computed(() => {
-  if (!searchTerm.value) return pedidos.value
   const term = searchTerm.value.toLowerCase()
+
+  if (!term) return pedidos.value
+
   return pedidos.value.filter(pedido =>
     pedido.clienteNome?.toLowerCase().includes(term) ||
-    pedido.id.toLowerCase().includes(term)
+    pedido.id.toString().includes(term) ||
+    pedido.status?.toLowerCase().includes(term)
   )
 })
-
 const carregarPedidos = async () => {
   try {
     const todosPedidos = await pedidoService.listarTodos()
 
     const pedidosComClientes = await Promise.all(
-      todosPedidos.map(async (pedido) => {
-        try {
-          let clienteNome = 'Cliente não informado'
-          if (pedido.usuarioId) {
-            const cliente = await usuarioService.buscarPorId(pedido.usuarioId)
-            clienteNome = cliente ? cliente.nome : 'Cliente não encontrado'
-          }
+      todosPedidos.map(async pedido => {
 
-          const valorFormatado = (pedido.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        const cliente = await usuarioService.buscarPorId(
+          pedido.clienteId
+        )
 
-          return {
-            ...pedido,
-            clienteNome,
-            valorFormatado
-          }
-        } catch (err) {
-          console.error(`Erro ao buscar cliente para pedido ${pedido.id}:`, err)
-          return {
-            ...pedido,
-            clienteNome: 'Erro ao carregar',
-            dataFormatada: pedido.dataCriacao ? new Date(pedido.dataCriacao.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A',
-            valorFormatado: (pedido.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-          }
+        return {
+          ...pedido,
+
+          clienteNome: cliente?.nome ?? 'Cliente não encontrado'
+
+            .map(item =>
+              `${item.produtoId}x ${item.quantidade}`
+            )
+            .join(', ')
         }
       })
     )
 
     pedidos.value = pedidosComClientes
+
   } catch (err) {
     error.value = 'Erro ao carregar pedidos: ' + err.message
   } finally {
     loading.value = false
   }
 }
-
-onMounted(() => {
-  carregarPedidos()
+onMounted(async () => {
+  await carregarPedidos()
 })
 </script>
 

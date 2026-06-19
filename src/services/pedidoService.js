@@ -1,12 +1,25 @@
 import axiosInstance from './api';
 
+const mapPedido = (pedido) => ({
+  id: pedido.id,
+  clienteId: pedido.clientId,
+  enderecoId: pedido.addressId || null,
+  itens: (pedido.orderItems || []).map(item => ({
+    produtoId: item.productId,
+    quantidade: item.quantity
+  })),
+  valorTotal: pedido.amount,
+  frete: pedido.freight,
+  status: pedido.orderStatus,
+  createdAt: pedido.createdAt
+});
+
 export const pedidoService = {
   async listarTodos() {
     try {
       const response = await axiosInstance.get('/orders');
-      return response.data;
+      return response.data.map(mapPedido);
     } catch (error) {
-      console.error('Erro ao listar pedidos:', error);
       throw new Error('Não foi possível carregar os pedidos');
     }
   },
@@ -14,19 +27,17 @@ export const pedidoService = {
   async buscarPorId(id) {
     try {
       const response = await axiosInstance.get(`/orders/${id}`);
-      return response.data;
+      return mapPedido(response.data);
     } catch (error) {
-      console.error('Erro ao buscar pedido:', error);
-      throw error;
+      throw new Error('Não foi possível buscar o pedido');
     }
   },
 
   async buscarPorUsuario(clientId) {
     try {
       const response = await axiosInstance.get(`/orders/client/${clientId}`);
-      return response.data;
+      return response.data.map(mapPedido);
     } catch (error) {
-      console.error('Erro ao buscar pedidos por usuário:', error);
       throw new Error('Não foi possível buscar os pedidos');
     }
   },
@@ -34,9 +45,8 @@ export const pedidoService = {
   async criar(pedido) {
     try {
       const response = await axiosInstance.post('/orders', pedido);
-      return response.data;
+      return mapPedido(response.data);
     } catch (error) {
-      console.error('Erro ao criar pedido:', error);
       throw new Error('Não foi possível criar o pedido');
     }
   },
@@ -44,18 +54,16 @@ export const pedidoService = {
   async atualizar(id, dadosAtualizados) {
     try {
       const response = await axiosInstance.put(`/orders/${id}`, dadosAtualizados);
-      return response.data;
+      return mapPedido(response.data);
     } catch (error) {
-      console.error('Erro ao atualizar pedido:', error);
       throw new Error('Não foi possível atualizar o pedido');
     }
   },
   async atualizarStatus(id, status) {
     try {
       const response = await axiosInstance.patch(`/orders/${id}/status?status=${status}`);
-      return response.data;
+      return mapPedido(response.data);
     } catch (error) {
-      console.error('Erro ao atualizar status do pedido:', error);
       throw new Error('Não foi possível atualizar o status do pedido');
     }
   },
@@ -63,9 +71,8 @@ export const pedidoService = {
   async deletar(id) {
     try {
       const response = await axiosInstance.delete(`/orders/${id}`);
-      return response.data;
+      return mapPedido(response.data);
     } catch (error) {
-      console.error('Erro ao deletar pedido:', error);
       throw new Error('Não foi possível deletar o pedido');
     }
   }

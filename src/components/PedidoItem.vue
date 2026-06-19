@@ -15,8 +15,8 @@
     </td>
 
     <td>
-      <span :class="`status status-${pedido.orderStatus}`">
-        {{ (pedido.orderStatus) }}
+      <span :class="`status status-${pedido.status}`">
+        {{ (pedido.status) }}
       </span>
     </td>
 
@@ -38,18 +38,18 @@ const props = defineProps({
   pedido: { type: Object, required: true }
 });
 
-const firstItem = computed(() => props.pedido.orderItems?.[0] || null);
+const firstItem = computed(() => props.pedido.itens?.[0] || null);
 const totalQuantidade = computed(() =>
-  props.pedido.orderItems?.reduce((total, item) => total + (item.quantity ?? 0), 0) || 0
+  props.pedido.itens?.reduce((total, item) => total + (item.quantidade ?? 0), 0) || 0
 );
 
 const produto = ref(null);
 
 async function loadProduto() {
   const item = firstItem.value;
-  if (item && item.productId) {
+  if (item && item.produtoId) {
     try {
-      produto.value = await produtoService.buscarPorId(item.productId);
+      produto.value = await produtoService.buscarPorId(item.produtoId);
     } catch (e) {
       produto.value = null;
       console.error('Erro ao buscar produto:', e);
@@ -57,6 +57,7 @@ async function loadProduto() {
   } else {
     produto.value = null;
   }
+  console.log('Produto carregado:', produto.value);
 }
 
 watch(firstItem, loadProduto, { immediate: true });

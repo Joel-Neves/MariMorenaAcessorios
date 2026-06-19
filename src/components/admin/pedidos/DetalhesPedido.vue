@@ -27,13 +27,13 @@
         <h3>Informações Gerais</h3>
         <div class="info-grid">
           <div class="info-item">
-            <strong>Pedido #{{ pedido.id.slice(-8).toUpperCase() }}</strong>
+            <strong>Pedido #{{ pedido.id }}</strong>
           </div>
           <div class="info-item">
-            <strong>Data:</strong> {{ pedido.dataCriacao }}
+            <strong>Data:</strong> {{ pedido.createdAt }}
           </div>
           <div class="info-item">
-            <strong>Método de Pagamento:</strong> {{ pedido.pagamento.metodo || 'N/A' }}
+            <strong>Método de Pagamento:</strong> {{ pagamento?.metodo || 'N/A' }}
           </div>
         </div>
       </div>
@@ -45,18 +45,18 @@
             <h4>Contato</h4>
             <p><strong>Nome:</strong> {{ cliente?.nome || 'N/A' }}</p>
             <p><strong>Email:</strong> {{ cliente?.email || 'N/A' }}</p>
-            <p><strong>Telefone:</strong> {{ cliente?.phone || 'N/A' }}</p>
+            <p><strong>Telefone:</strong> {{ cliente?.telefone || 'N/A' }}</p>
           </div>
           <div class="client-column">
             <h4>Endereço</h4>
-            <p>Rua: {{ cliente.endereco.rua }},
-             N°: {{ cliente.endereco.numero }},<br>
-             Compl.: {{ cliente.endereco.complemento }}<br>
-              Bairro: {{ cliente.endereco.bairro }},
-              CEP: {{ cliente.endereco.cep }}<br>
-              Cidade: {{ cliente.endereco.cidade }} -
-              Estado: {{ cliente.endereco.estado }}<br>
-              País: {{ cliente.endereco.pais }}
+            <p>Rua: {{ endereco?.rua || 'N/A' }},
+             N°: {{ endereco?.numero || 'N/A' }},<br>
+             Compl.: {{ endereco?.complemento || 'N/A' }}<br>
+              Bairro: {{ endereco?.bairro || 'N/A' }},
+              CEP: {{ endereco?.cep || 'N/A' }}<br>
+              Cidade: {{ endereco?.cidade || 'N/A' }} -
+              Estado: {{ endereco?.estado || 'N/A' }}<br>
+              País: {{ endereco?.pais || 'N/A' }}
             </p>
 
           </div>
@@ -69,11 +69,11 @@
           <div v-for="(item, index) in pedido.itens" :key="index" class="item-row">
             <div class="item-info">
               <strong>{{ produtos[item.produtoId]?.nome || 'Produto não encontrado' }}</strong>
-              <span v-if="item.cor || item.material"> - {{ item.cor || item.material }}</span>
+              <span > {{ item.cor }}</span>
             </div>
             <div class="item-details">
               <span>Qtd: {{ item.quantidade }}</span>
-              <span>{{ (produtos[item.produtoId].preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
+              <span>{{ (produtos[item.produtoId]?.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
             </div>
           </div>
         </div>
@@ -85,19 +85,15 @@
         <div class="summary-grid">
           <div class="summary-item">
             <span>Subtotal:</span>
-            <span>{{ subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
+            <span>{{ (pedido.valorTotal - pedido.frete || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
           </div>
           <div class="summary-item">
             <span>Frete:</span>
             <span>{{ (pedido.frete || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
           </div>
-          <div class="summary-item">
-            <span>Desconto:</span>
-            <span>{{ (pedido.desconto || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
-          </div>
           <div class="summary-item total">
             <span><strong>Total:</strong></span>
-            <span><strong>{{ valorTotalFormatado }}</strong></span>
+            <span><strong>{{ (pedido.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</strong></span>
           </div>
         </div>
       </div>
@@ -111,6 +107,8 @@ import { useRoute } from 'vue-router'
 import { pedidoService } from '@/services/pedidoService'
 import { usuarioService } from '@/services/usuarioService'
 import { produtoService } from '@/services/produtoService'
+import { pagamentoService } from '@/services/pagamentoService'
+import { enderecoService } from '@/services/enderecoService'
 
 const route = useRoute()
 
@@ -120,13 +118,15 @@ const error = ref(null)
 const statusAtual = ref('')
 const cliente = ref(null)
 const produtos = ref({})
+const pagamento = ref(null)
+const endereco = ref(null)
 
 const statusOptions = [
-  { value: 'pendente', label: 'Aguardando Pagamento', class: 'status-critical' },
-  { value: 'processando', label: 'Processando', class: 'status-attention' },
-  { value: 'enviado', label: 'Enviado', class: 'status-attention' },
-  { value: 'entregue', label: 'Entregue', class: 'status-success' },
-  { value: 'cancelado', label: 'Cancelar', class: 'status-critical' }
+  { value: 'PENDENTE', label: 'Aguardando Pagamento', class: 'status-critical' },
+  { value: 'PROCESSANDO', label: 'Processando', class: 'status-attention' },
+  { value: 'ENVIADO', label: 'Enviado', class: 'status-attention' },
+  { value: 'ENTREGUE', label: 'Entregue', class: 'status-success' },
+  { value: 'CANCELADO', label: 'Cancelar', class: 'status-critical' }
 ]
 
 const statusMudou = computed(() => statusAtual.value !== pedido.value?.status)
@@ -139,41 +139,54 @@ const statusClass = computed(() => {
   return 'status-critical'
 })
 
-const subtotal = computed(() => {
-  if (!pedido.value?.itens) return 0
-  return pedido.value.itens.reduce((sum, item) => {
-    const preco = parseFloat(produtos.value[item.produtoId]?.preco) || 0
-    const qtd = parseInt(item.quantidade) || 1
-    return sum + (preco * qtd)
-  }, 0)
-})
-
-
-
-const valorTotalFormatado = computed(() => {
-  return (pedido.value?.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-})
-
-
 const carregarDados = async () => {
   try {
-    const id = route.params.id
-    pedido.value = await pedidoService.buscarPorId(id)
+    const pedidoData = await pedidoService.buscarPorId(route.params.id)
+    console.log('Pedido recebido:', pedidoData)
+    if (!pedidoData) {
+      throw new Error('Pedido não encontrado');
+    }
+    pedido.value = pedidoData
     statusAtual.value = pedido.value.status
 
-    if (pedido.value.usuarioId) {
-      cliente.value = await usuarioService.buscarPorId(pedido.value.usuarioId)
+    try {
+      const clienteData = await usuarioService.buscarPorId(pedido.value.clienteId)
+      cliente.value = clienteData
+    } catch (err) {
+      console.error('Erro ao carregar cliente:', err)
+      cliente.value = null
     }
 
-    if (pedido.value.itens && pedido.value.itens.length > 0) {
-      const produtoIds = [...new Set(pedido.value.itens.map(item => item.produtoId))]
-      const produtosFetched = await Promise.all(produtoIds.map(id => produtoService.buscarPorId(id)))
-      produtosFetched.forEach((produto, index) => {
-        produtos.value[produtoIds[index]] = produto
-      })
+    if (pedido.value.itens && Array.isArray(pedido.value.itens)) {
+      for (const item of pedido.value.itens) {
+        try {
+          const produtoData = await produtoService.buscarPorId(item.produtoId)
+          produtos.value[item.produtoId] = produtoData
+        } catch (err) {
+          console.error(`Erro ao carregar produto ${item.produtoId}:`, err)
+          produtos.value[item.produtoId] = null
+        }
+      }
+    }
+
+    try {
+      pagamento.value = await pagamentoService.buscarPorPedido(route.params.id)
+    } catch (err) {
+      console.error('Erro ao carregar pagamento:', err)
+      pagamento.value = null
+    }
+
+    if (pedido.value.enderecoId) {
+      try {
+        endereco.value = await enderecoService.buscarPorId(pedido.value.enderecoId)
+      } catch (err) {
+        console.error('Erro ao carregar endereço:', err)
+        endereco.value = null
+      }
     }
   } catch (err) {
-    error.value = 'Erro ao carregar dados: ' + err.message
+    console.error('Erro ao carregar dados do pedido:', err)
+    error.value = 'Erro ao carregar detalhes do pedido: ' + err.message
   } finally {
     loading.value = false
   }
@@ -194,8 +207,8 @@ const salvarStatus = async () => {
   }
 }
 
-onMounted(() => {
-  carregarDados()
+onMounted( () => {
+   carregarDados()
 })
 </script>
 
