@@ -2,240 +2,80 @@
   <div class="endereco">
     <h2>Selecionar Endereço de Entrega</h2>
 
-    <div v-if="enderecoSalvo && !mostrarFormulario" class="endereco-salvo">
-      <h3>Endereço cadastrado</h3>
-      <p>{{ enderecoSalvo.rua }}, {{ enderecoSalvo.numero }}</p>
-      <p>{{ enderecoSalvo.bairro }} - {{ enderecoSalvo.cidade }}/{{ enderecoSalvo.estado }}</p>
-      <p>CEP: {{ enderecoSalvo.cep }}</p>
-      <p v-if="enderecoSalvo.complemento">Complemento: {{ enderecoSalvo.complemento }}</p>
+    <div v-if="carregando" class="loading">Carregando endereços...</div>
 
-      <div class="form-actions">
-        <router-link to="/sacola" class="btn-voltar">Voltar para Sacola</router-link>
-        <button type="button" class="btn-secundario" @click="mostrarFormulario = true">Adicionar outro endereço</button>
-        <button type="button" class="btn-proximo" @click="usarEnderecoSalvo">Usar este endereço</button>
+    <div v-else-if="enderecos.length === 0" class="sem-enderecos">
+      <p>Nenhum endereço cadastrado.</p>
+      <p>Cadastre um endereço em <router-link to="/perfil">Meus Dados</router-link> antes de finalizar a compra.</p>
+    </div>
+
+    <div v-else class="enderecos-lista">
+      <div
+        v-for="(end, index) in enderecos.slice(0, 3)"
+        :key="end.id || index"
+        class="endereco-card"
+      >
+        <div class="endereco-info">
+          <p class="endereco-rua">{{ end.rua }}, {{ end.numero }}</p>
+          <p class="endereco-bairro">{{ end.bairro }} - {{ end.cidade }}/{{ end.estado }}</p>
+          <p class="endereco-cep">CEP: {{ end.cep }}</p>
+          <p v-if="end.complemento" class="endereco-complemento">Complemento: {{ end.complemento }}</p>
+        </div>
+        <button type="button" class="btn-selecionar" @click="usarEndereco(end)">
+          Entregar neste endereço
+        </button>
       </div>
     </div>
 
-    <form v-else @submit.prevent="salvarEndereco" class="endereco-form">
-      <div class="form-group">
-        <label for="cep">CEP:</label>
-        <input type="text" id="cep" v-model="endereco.cep" @input="buscarCep" maxlength="8" :class="{ 'is-invalid': v$.endereco.cep.$error }" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="rua">Rua:</label>
-          <input type="text" id="rua" v-model="endereco.rua" placeholder="Nome da rua" :class="{ 'is-invalid': v$.endereco.rua.$error }" />
-        </div>
-        <div class="form-group">
-          <label for="numero">Número:</label>
-          <input type="text" id="numero" v-model="endereco.numero" placeholder="123" :class="{ 'is-invalid': v$.endereco.numero.$error }" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="complemento">Complemento:</label>
-        <input type="text" id="complemento" v-model="endereco.complemento"
-          placeholder="Apartamento, bloco, etc." />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="bairro">Bairro:</label>
-          <input type="text" id="bairro" v-model="endereco.bairro" placeholder="Nome do bairro" :class="{ 'is-invalid': v$.endereco.bairro.$error }" />
-        </div>
-        <div class="form-group">
-          <label for="cidade">Cidade:</label>
-          <input type="text" id="cidade" v-model="endereco.cidade" placeholder="Nome da cidade" :class="{ 'is-invalid': v$.endereco.cidade.$error }" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="estado">Estado:</label>
-          <select id="estado" v-model="endereco.estado" :class="{ 'is-invalid': v$.endereco.estado.$error }">
-            <option value="">Selecione</option>
-            <option value="AC">Acre</option>
-            <option value="AL">Alagoas</option>
-            <option value="AP">Amapá</option>
-            <option value="AM">Amazonas</option>
-            <option value="BA">Bahia</option>
-            <option value="CE">Ceará</option>
-            <option value="DF">Distrito Federal</option>
-            <option value="ES">Espírito Santo</option>
-            <option value="GO">Goiás</option>
-            <option value="MA">Maranhão</option>
-            <option value="MT">Mato Grosso</option>
-            <option value="MS">Mato Grosso do Sul</option>
-            <option value="MG">Minas Gerais</option>
-            <option value="PA">Pará</option>
-            <option value="PB">Paraíba</option>
-            <option value="PR">Paraná</option>
-            <option value="PE">Pernambuco</option>
-            <option value="PI">Piauí</option>
-            <option value="RJ">Rio de Janeiro</option>
-            <option value="RN">Rio Grande do Norte</option>
-            <option value="RS">Rio Grande do Sul</option>
-            <option value="RO">Rondônia</option>
-            <option value="RR">Roraima</option>
-            <option value="SC">Santa Catarina</option>
-            <option value="SP">São Paulo</option>
-            <option value="SE">Sergipe</option>
-            <option value="TO">Tocantins</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="pais">País:</label>
-          <input type="text" id="pais" v-model="endereco.pais" value="Brasil" readonly />
-        </div>
-      </div>
+    <div class="form-actions">
+      <router-link to="/sacola" class="btn-voltar">Voltar</router-link>
+    </div>
 
-      <div class="form-actions">
-        <router-link to="/sacola" class="btn-voltar">Voltar para Sacola</router-link>
-        <button v-if="enderecoSalvo" type="button" class="btn-secundario" @click="mostrarFormulario = false">Usar endereço salvo</button>
-        <button type="submit" class="btn-proximo">Próximo</button>
-      </div>
-
-      <p v-if="mensagemErro" class="error-message">{{ mensagemErro }}</p>
-    </form>
+    <p v-if="mensagemErro" class="error-message">{{ mensagemErro }}</p>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCheckoutStore } from '@/stores/checkoutStore';
 import { authService } from '@/services/authService';
-import { useVuelidate } from '@vuelidate/core';
-import { required, numeric, minLength, maxLength } from '@vuelidate/validators';
 import { enderecoService } from '@/services/enderecoService';
-
 
 const router = useRouter();
 const checkoutStore = useCheckoutStore();
 
-const endereco = ref({
-  cep: '',
-  rua: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
-  cidade: '',
-  estado: '',
-  pais: 'Brasil',
-  clientId: authService.getCurrentUser()?.id
-});
-const enderecoSalvo = ref(null);
-const mostrarFormulario = ref(true);
+const enderecos = ref([]);
+const carregando = ref(true);
 const mensagemErro = ref('');
 
-const rules = computed(() => ({
-  endereco: {
-    cep: { required, numeric, minLength: minLength(8), maxLength: maxLength(8) },
-    rua: { required, minLength: minLength(3) },
-    numero: { required, numeric, minLength: minLength(1), maxLength: maxLength(5) },
-    complemento: { minLength: minLength(2) },
-    bairro: { required, minLength: minLength(2) },
-    cidade: { required, minLength: minLength(2) },
-    estado: { required }
-  }
-}));
-
-const v$ = useVuelidate(rules, { endereco });
-
 onMounted(async () => {
-  if (checkoutStore.endereco) {
-    endereco.value = { ...endereco.value, ...checkoutStore.endereco };
-  }
-
   const currentUser = authService.getCurrentUser();
   if (!currentUser) {
+    carregando.value = false;
     return;
   }
 
   try {
     const enderecosEncontrados = await enderecoService.buscarPorUsuario(currentUser.id);
-    // Pega o primeiro endereço da lista (compatibilidade com versão anterior)
-    const enderecoEncontrado = enderecosEncontrados && enderecosEncontrados.length > 0 ? enderecosEncontrados[0] : null;
-    const possuiEnderecoSalvo = enderecoEncontrado && enderecoEncontrado.id;
-
-    if (possuiEnderecoSalvo) {
-      enderecoSalvo.value = { ...enderecoEncontrado };
-      endereco.value = { ...endereco.value, ...enderecoEncontrado };
-      mostrarFormulario.value = false;
-    }
+    enderecos.value = Array.isArray(enderecosEncontrados) ? enderecosEncontrados : [];
   } catch (err) {
-    console.error("Erro ao carregar dados do usuário:", err);
+    console.error("Erro ao carregar endereços:", err);
+    mensagemErro.value = 'Erro ao carregar endereços. Tente novamente.';
+  } finally {
+    carregando.value = false;
   }
 });
 
-const buscarCep = async () => {
-  if (!endereco.value.cep) {
-    return;
-  }
-  const cepLimpo = endereco.value.cep.replace(/\D/g, '');
-  endereco.value.cep = cepLimpo;
-
-  if (cepLimpo.length === 8) {
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      const data = await response.json();
-
-      if (!data.erro) {
-        endereco.value.rua = data.logradouro;
-        endereco.value.bairro = data.bairro;
-        endereco.value.cidade = data.localidade;
-        endereco.value.estado = data.uf;
-        endereco.value.pais = 'Brasil';
-      }
-    } catch (error) {
-      console.error('Erro ao buscar CEP:', error);
-    }
-  }
-};
-
-const usarEnderecoSalvo = () => {
-  if (!enderecoSalvo.value) {
-    mostrarFormulario.value = true;
-    return;
-  }
-
-  checkoutStore.setEndereco({ ...enderecoSalvo.value });
-  router.push('/checkout/pagamento');
-};
-
-const salvarEndereco = async () => {
-  mensagemErro.value = '';
-  const valido = await v$.value.$validate();
-
-  if (!valido) {
-    mensagemErro.value = 'Preencha os campos obrigatórios do endereço para continuar.';
-    return;
-  }
-
-  checkoutStore.setEndereco({ ...endereco.value });
-
-  const currentUser = authService.getCurrentUser();
-  if (currentUser) {
-    try {
-      const enderecosAtuais = await enderecoService.buscarPorUsuario(currentUser.id);
-      // Pega o primeiro endereço da lista
-      const enderecoAtual = enderecosAtuais && enderecosAtuais.length > 0 ? enderecosAtuais[0] : null;
-      if (enderecoAtual && enderecoAtual.id) {
-        await enderecoService.atualizar(enderecoAtual.id, endereco.value);
-      } else {
-        await enderecoService.criar(endereco.value);
-      }
-    } catch (error) {
-      console.error('Erro ao salvar endereço:', error);
-      mensagemErro.value = error.message || 'Ocorreu um erro ao salvar o endereço. Tente novamente.';
-      return;
-    }
-  }
-
+const usarEndereco = (endereco) => {
+  checkoutStore.setEndereco({ ...endereco });
   router.push('/checkout/pagamento');
 };
 </script>
 
 <style scoped>
 .endereco {
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -246,85 +86,80 @@ const salvarEndereco = async () => {
   text-align: center;
 }
 
-.endereco-salvo {
+.loading,
+.sem-enderecos {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
   background-color: #f9f9f9;
-  padding: 1.5rem;
   border-radius: 8px;
-  margin-bottom: 2rem;
   border: 1px solid #e0e0e0;
 }
 
-.endereco-salvo h3 {
+.sem-enderecos a {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.enderecos-lista {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.endereco-card {
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.3s;
+  min-width: 0;
+}
+
+.endereco-card:hover {
+  border-color: #d4af37;
+}
+
+.endereco-info p {
+  margin: 0.25rem 0;
   color: #1a1a1a;
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
 }
 
-.endereco-salvo p {
-  margin: 0.5rem 0;
-  color: #666666;
-}
-.is-invalid {
-  border-color: #e74c3c;
+.endereco-rua {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
-.btn-usar {
-  margin-top: 1rem;
+.endereco-bairro,
+.endereco-cep,
+.endereco-complemento {
+  color: #666 !important;
+  font-size: 0.95rem;
+}
+
+.btn-selecionar {
   padding: 0.8rem 2rem;
   background-color: #d4af37;
   color: #1a1a1a;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 100%;
 }
 
-.btn-usar:hover {
+.btn-selecionar:hover {
   background-color: #c49b2a;
-}
-
-.endereco-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: #1a1a1a;
-}
-
-.form-group input,
-.form-group select {
-  padding: 0.8rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #d4af37;
 }
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 2rem;
 }
 
@@ -337,6 +172,7 @@ const salvarEndereco = async () => {
   border-radius: 8px;
   font-weight: 500;
   transition: all 0.3s;
+  display: inline-block;
 }
 
 .btn-voltar:hover {
@@ -344,50 +180,26 @@ const salvarEndereco = async () => {
   border-color: #cccccc;
 }
 
-.btn-secundario {
-  padding: 0.8rem 1rem;
-  background-color: #f5f5f5;
-  color: #1a1a1a;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-secundario:hover {
-  background-color: #eaeaea;
-}
-
-.btn-proximo {
-  padding: 0.8rem 2rem;
-  background-color: #d4af37;
-  color: #1a1a1a;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-proximo:hover {
-  background-color: #c49b2a;
-}
-
 .error-message {
   color: #e74c3c;
   margin-top: 0.5rem;
   font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .enderecos-lista {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
+  .endereco h2 {
+    font-size: 1.4rem;
   }
 
-  .form-actions {
-    flex-direction: column;
-    gap: 1rem;
+  .enderecos-lista {
+    grid-template-columns: 1fr;
   }
 }
 </style>
