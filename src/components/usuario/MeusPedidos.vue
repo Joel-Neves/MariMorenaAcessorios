@@ -72,7 +72,7 @@
                 <img v-if="item.produto?.imagens?.[0]?.url" :src="item.produto.imagens[0].url" :alt="item.produto.nome"
                   class="item-imagem" />
                 <span>{{ item.produto?.nome || 'Produto' }} - Quantidade: {{ item.quantidade }} - R$ {{
-                  item.produto?.preco ? item.produto.preco.toFixed(2) : '0.00' }}</span>
+                  produto?.preco ? produto.preco.toFixed(2) : '0.00' }}</span>
               </li>
             </ul>
           </div>
@@ -80,12 +80,12 @@
           <div v-if="podeCancelar(pedidoSelecionado)" class="detalhe-item">
             <button @click="cancelarPedido(pedidoSelecionado)" class="btn-cancelar">Cancelar Pedido</button>
           </div>
-          <div v-if="pedidoSelecionado.endereco" class="detalhe-item">
+          <div v-if="enderecoEntrega" class="detalhe-item">
             <strong>Endereço de Entrega:</strong>
-            <p>{{ pedidoSelecionado.endereco.rua }}, {{ pedidoSelecionado.endereco.numero }}<br>
-              {{ pedidoSelecionado.endereco.bairro }}, {{ pedidoSelecionado.endereco.cidade }} - {{
-              pedidoSelecionado.endereco.estado }}<br>
-              CEP: {{ pedidoSelecionado.endereco.cep }}</p>
+            <p>{{ enderecoEntrega.rua }}, {{ enderecoEntrega.numero }}<br>
+              {{ enderecoEntrega.bairro }}, {{ enderecoEntrega.cidade }} - {{
+              enderecoEntrega.estado }}<br>
+              CEP: {{ enderecoEntrega.cep }}</p>
           </div>
         </div>
         <button @click="fecharModal" class="btn-fechar">Fechar</button>
@@ -99,6 +99,7 @@ import { pedidoService } from '@/services/pedidoService';
 import { produtoService } from '@/services/produtoService';
 import { authService } from '@/services/authService';
 import PedidoItem from '../PedidoItem.vue';
+import { enderecoService } from '@/services/enderecoService.js';
 
 const pedidos = ref([]);
 const pedidosFiltrados = ref([]);
@@ -107,6 +108,7 @@ const statusFilter = ref('');
 const searchQuery = ref('');
 const pedidoSelecionado = ref(null);
 const produto = ref(null);
+const enderecoEntrega = ref(null);
 
 onMounted(async () => {
   await carregarPedidos();
@@ -151,6 +153,17 @@ const carregarPedidos = async () => {
     loading.value = false;
   }
 };
+//buscar endereco de entrega
+const carregarEnderecoEntrega = async (pedido) => {
+  if (!pedido.enderecoId) return;
+
+  try {
+    const endereco = await enderecoService.buscarPorId(pedido.enderecoId);
+    enderecoEntrega.value = endereco;
+  } catch (error) {
+    console.error("Erro ao carregar endereço de entrega:", error);
+  }
+};
 
 // Filtrar pedidos
 const filtrarPedidos = () => {
@@ -175,12 +188,14 @@ const filtrarPedidos = () => {
 };
 
 
-const verDetalhes = (pedido) => {
+const verDetalhes = async (pedido) => {
   pedidoSelecionado.value = pedido;
+  await carregarEnderecoEntrega(pedido);
 };
 
 const fecharModal = () => {
   pedidoSelecionado.value = null;
+  enderecoEntrega.value = null;
 };
 
 const podeCancelar = (pedido) => {

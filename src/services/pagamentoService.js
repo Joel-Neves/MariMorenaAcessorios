@@ -17,7 +17,7 @@ export const pagamentoService = {
         throw error;
     }
   },
-  async buscarPorPedido(pagamentoId) {
+  async buscarPorId(pagamentoId) {
     try {
         const response = await axiosInstance.get(`/payments/${pagamentoId}`);
         return mapPagamento(response.data);

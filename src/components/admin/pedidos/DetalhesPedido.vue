@@ -170,7 +170,7 @@ const carregarDados = async () => {
     }
 
     try {
-      pagamento.value = await pagamentoService.buscarPorPedido(route.params.id)
+      pagamento.value = await pagamentoService.buscarPorId(pedido.value.pagamentoId)
     } catch (err) {
       console.error('Erro ao carregar pagamento:', err)
       pagamento.value = null
