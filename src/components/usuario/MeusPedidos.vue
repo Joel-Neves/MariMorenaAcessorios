@@ -54,7 +54,7 @@
         <div class="pedido-detalhes">
           <div class="detalhe-item">
             <strong>Status:</strong>
-            <span :class="`status status-${pedidoSelecionado.orderStatus}`">{{ pedidoSelecionado.status }}</span>
+            <span :class="`status status-${pedidoSelecionado.status}`">{{ pedidoSelecionado.status }}</span>
           </div>
           <div class="detalhe-item">
             <strong>Data:</strong> {{ pedidoSelecionado.createdAt }}
@@ -72,7 +72,7 @@
                 <img v-if="item.produto?.imagens?.[0]?.url" :src="item.produto.imagens[0].url" :alt="item.produto.nome"
                   class="item-imagem" />
                 <span>{{ item.produto?.nome || 'Produto' }} - Quantidade: {{ item.quantidade }} - R$ {{
-                  produto?.preco ? produto.preco.toFixed(2) : '0.00' }}</span>
+                  item.produto?.preco ? item.produto.preco.toFixed(2) : '0.00' }}</span>
               </li>
             </ul>
           </div>
@@ -107,7 +107,6 @@ const loading = ref(false);
 const statusFilter = ref('');
 const searchQuery = ref('');
 const pedidoSelecionado = ref(null);
-const produto = ref(null);
 const enderecoEntrega = ref(null);
 
 onMounted(async () => {
@@ -126,7 +125,7 @@ const carregarPedidos = async () => {
     // coletar productIds únicos
     const productIds = new Set();
     userPedidos.forEach(p => {
-      p.orderItems?.forEach(i => i.productId && productIds.add(i.productId));
+      p.itens?.forEach(i => i.produtoId && productIds.add(i.produtoId));
     });
 
     // buscar produtos em paralelo
@@ -140,8 +139,8 @@ const carregarPedidos = async () => {
 
     // associar produtos aos itens
     userPedidos.forEach(pedido => {
-      pedido.orderItems?.forEach(item => {
-        item.produto = produtoMap.get(item.productId) || null;
+      pedido.itens?.forEach(item => {
+        item.produto = produtoMap.get(item.produtoId) || null;
       });
     });
 
@@ -171,7 +170,7 @@ const filtrarPedidos = () => {
 
   // Filtro por status
   if (statusFilter.value) {
-    filtrados = filtrados.filter(pedido => pedido.orderStatus === statusFilter.value);
+    filtrados = filtrados.filter(pedido => pedido.status === statusFilter.value);
   }
 
   // Busca por id do pedido ou nome do produto
@@ -179,7 +178,7 @@ const filtrarPedidos = () => {
     const query = searchQuery.value.toLowerCase();
     filtrados = filtrados.filter(pedido =>
       (pedido.id && pedido.id.toString().includes(query)) ||
-      pedido.orderItems?.some(item =>
+      pedido.itens?.some(item =>
         item.produto && item.produto.nome?.toLowerCase().includes(query)
       )
     );
@@ -199,7 +198,7 @@ const fecharModal = () => {
 };
 
 const podeCancelar = (pedido) => {
-  return pedido.orderStatus === 'PENDENTE';
+  return pedido.status === 'PENDENTE';
 };
 
 const cancelarPedido = async (pedido) => {
@@ -209,11 +208,11 @@ const cancelarPedido = async (pedido) => {
 
     await pedidoService.atualizarStatus(pedido.id, 'CANCELADO');
 
-    for (const item of pedido.orderItems) {
-      if (item.productId) {
-        const p = await produtoService.buscarPorId(item.productId);
-        const novaQuantidade = (p.estoque ?? 0) + (item.quantity ?? 0);
-        await produtoService.atualizarEstoque(item.productId, novaQuantidade);
+    for (const item of pedido.itens) {
+      if (item.produtoId) {
+        const p = await produtoService.buscarPorId(item.produtoId);
+        const novaQuantidade = (p.estoque ?? 0) + (item.quantidade ?? 0);
+        await produtoService.atualizarEstoque(item.produtoId, novaQuantidade);
       }
     }
 
