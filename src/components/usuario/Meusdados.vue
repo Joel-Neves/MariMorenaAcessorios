@@ -245,14 +245,14 @@ onMounted(async () => {
       enderecosData.forEach((addr) => {
         enderecos.push({
           id: addr.id || null,
-          zipCode: addr.zipCode || '',
-          street: addr.street || '',
-          number: addr.number || '',
-          complement: addr.complement || '',
-          neighborhood: addr.neighborhood || '',
-          city: addr.city || '',
-          state: addr.state || '',
-          country: addr.country || 'Brasil',
+          zipCode: addr.cep || '',
+          street: addr.rua || '',
+          number: addr.numero || '',
+          complement: addr.complemento || '',
+          neighborhood: addr.bairro || '',
+          city: addr.cidade || '',
+          state: addr.estado || '',
+          country: addr.pais || 'Brasil',
           label: addr.label || '',
         });
       });
