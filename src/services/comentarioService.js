@@ -1,89 +1,89 @@
-import axiosInstance from './api';
+import axiosInstance from "./api";
+
+const mapComentario = (comentario) => ({
+  id: comentario.id,
+  conteudo: comentario.content,
+  clienteNome: comentario.authorName,
+  clienteId: comentario.clientId,
+  produtoNome: comentario.productName,
+  createdAt: comentario.createdAt,
+});
 
 export const comentarioService = {
   async listarTodos() {
     try {
-      return await axiosInstance.get('/comentarios');
+      const response = await axiosInstance.get("/comments");
+      return response.data.map(mapComentario);
     } catch (error) {
-      console.error('Erro ao listar comentários:', error);
-      throw new Error('Não foi possível carregar os comentários');
+      throw error;
     }
   },
 
   async buscarPorId(id) {
     try {
-      return await axiosInstance.get(`/comentarios/${id}`);
+      const response = await axiosInstance.get(`/comments/${id}`);
+      return mapComentario(response.data);
     } catch (error) {
-      console.error('Erro ao buscar comentário:', error);
       throw error;
     }
   },
 
-  async buscarPorProduto(produtoId) {
-    try {
-      return await axiosInstance.get(`/comentarios/produto/${produtoId}`);
-    } catch (error) {
-      console.error('Erro ao buscar comentários por produto:', error);
-      throw new Error('Não foi possível buscar os comentários');
-    }
-  },
+  async buscarPorProduto(produtoId, page = 0, size = 5) {
+    const response = await axiosInstance.get(`/comments/product/${produtoId}`, {
+      params: { page, size, sort: "createdAt" },
+    });
 
-  async buscarPorUsuario(userId) {
+    // Separamos o joio do trigo.
+    // response.data.content tem os comentários de fato.
+    // O resto é metadado essencial para a interface saber onde está.
+    return {
+      comentarios: response.data.content.map(mapComentario),
+      paginacao: {
+        currentPage: response.data.number,
+        totalPages: response.data.totalPages,
+        totalElements: response.data.totalElements,
+        isLast: response.data.last,
+        isFirst: response.data.first,
+      },
+    };
+  },
+  async buscarPorCliente(clienteId) {
     try {
-      return await axiosInstance.get(`/comentarios/usuario/${userId}`);
+      const comentarios = await this.listarTodos();
+      return comentarios.filter(
+        (comentario) => comentario.clienteId === clienteId,
+      );
     } catch (error) {
-      console.error('Erro ao buscar comentários por usuário:', error);
-      throw new Error('Não foi possível buscar os comentários');
+      throw error;
     }
   },
 
   async criar(comentario) {
     try {
-      return await axiosInstance.post('/comentarios', {
-        ...comentario,
-        dataCriacao: new Date(),
-        aprovado: comentario.aprovado || false
-      });
+      const response = await axiosInstance.post("/comments", comentario);
+      return mapComentario(response.data);
     } catch (error) {
-      console.error('Erro ao criar comentário:', error);
-      throw new Error('Não foi possível criar o comentário');
+      throw error;
     }
   },
 
   async atualizar(id, dadosAtualizados) {
     try {
-      return await axiosInstance.put(`/comentarios/${id}`, dadosAtualizados);
+      const response = await axiosInstance.put(
+        `/comments/${id}`,
+        dadosAtualizados,
+      );
+      return mapComentario(response.data);
     } catch (error) {
-      console.error('Erro ao atualizar comentário:', error);
-      throw new Error('Não foi possível atualizar o comentário');
+      throw error;
     }
   },
 
   async deletar(id) {
     try {
-      await axiosInstance.delete(`/comentarios/${id}`);
-      return true;
+      await axiosInstance.delete(`/comments/${id}`);
     } catch (error) {
-      console.error('Erro ao deletar comentário:', error);
-      throw new Error('Não foi possível deletar o comentário');
+      throw error;
     }
   },
-
-  async aprovarComentario(id) {
-    try {
-      return await axiosInstance.put(`/comentarios/${id}/aprovar`, { aprovado: true });
-    } catch (error) {
-      console.error('Erro ao aprovar comentário:', error);
-      throw new Error('Não foi possível aprovar o comentário');
-    }
-  },
-
-  async reprovarComentario(id) {
-    try {
-      return await axiosInstance.put(`/comentarios/${id}/reprovar`, { aprovado: false });
-    } catch (error) {
-      console.error('Erro ao reprovar comentário:', error);
-      throw new Error('Não foi possível reprovar o comentário');
-    }
-  }
 };
