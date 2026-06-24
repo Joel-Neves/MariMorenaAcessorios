@@ -47,6 +47,19 @@
 
     <div v-if="loading" class="loading">Carregando pedidos...</div>
 
+    <!-- Popup de Confirmação de Cancelamento -->
+    <div v-if="showCancelPopup" class="modal-overlay" @click="fecharCancelPopup">
+      <div class="modal-content confirm-popup" @click.stop>
+        <h3>Confirmar Cancelamento</h3>
+        <p>Tem certeza que deseja cancelar o pedido <strong>#{{ pedidoParaCancelar?.id }}</strong>?</p>
+        <p class="cancel-warning">Esta ação não poderá ser desfeita.</p>
+        <div class="popup-actions">
+          <button @click="confirmarCancelamento" class="btn-confirmar-cancelamento">Sim, Cancelar Pedido</button>
+          <button @click="fecharCancelPopup" class="btn-voltar">Voltar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de Detalhes -->
     <div v-if="pedidoSelecionado" class="modal-overlay" @click="fecharModal">
       <div class="modal-content" @click.stop>
@@ -108,6 +121,8 @@ const statusFilter = ref('');
 const searchQuery = ref('');
 const pedidoSelecionado = ref(null);
 const enderecoEntrega = ref(null);
+const showCancelPopup = ref(false);
+const pedidoParaCancelar = ref(null);
 
 onMounted(async () => {
   await carregarPedidos();
@@ -201,11 +216,22 @@ const podeCancelar = (pedido) => {
   return pedido.status === 'PENDENTE';
 };
 
-const cancelarPedido = async (pedido) => {
-  if (!confirm('Tem certeza que deseja cancelar este pedido?')) return;
-  
-  try {
+const cancelarPedido = (pedido) => {
+  fecharModal();
+  pedidoParaCancelar.value = pedido;
+  showCancelPopup.value = true;
+};
 
+const fecharCancelPopup = () => {
+  showCancelPopup.value = false;
+  pedidoParaCancelar.value = null;
+};
+
+const confirmarCancelamento = async () => {
+  const pedido = pedidoParaCancelar.value;
+  if (!pedido) return;
+
+  try {
     await pedidoService.atualizarStatus(pedido.id, 'CANCELADO');
 
     for (const item of pedido.itens) {
@@ -216,11 +242,12 @@ const cancelarPedido = async (pedido) => {
       }
     }
 
-    alert('Pedido CANCELADO com sucesso!');
+    fecharCancelPopup();
     fecharModal();
     await carregarPedidos(); 
   } catch (error) {
     console.error('Erro ao cancelar pedido:', error);
+    fecharCancelPopup();
     alert('Erro ao cancelar pedido: ' + error.message);
   }
 };
@@ -405,6 +432,59 @@ th {
 }
 
 .btn-fechar:hover {
+  background-color: #5a6268;
+}
+
+.confirm-popup {
+  max-width: 450px;
+  text-align: center;
+}
+
+.confirm-popup h3 {
+  color: #d9534f;
+  margin-bottom: 1rem;
+}
+
+.cancel-warning {
+  color: #d9534f;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn-confirmar-cancelamento {
+  padding: 0.75rem 1.5rem;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-confirmar-cancelamento:hover {
+  background-color: #c9302c;
+}
+
+.btn-voltar {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-voltar:hover {
   background-color: #5a6268;
 }
 
