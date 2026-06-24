@@ -72,19 +72,17 @@ const carregarPedidos = async () => {
     const pedidosComClientes = await Promise.all(
       todosPedidos.map(async pedido => {
 
-        const cliente = await usuarioService.buscarPorId(
-          pedido.clienteId
-        )
+        let clienteNome = 'Cliente não encontrado'
+        try {
+          const cliente = await usuarioService.buscarPorId(pedido.clienteId)
+          clienteNome = cliente?.nome ?? 'Cliente não encontrado'
+        } catch {
+          clienteNome = 'Cliente não encontrado'
+        }
 
         return {
           ...pedido,
-
-          clienteNome: cliente?.nome ?? 'Cliente não encontrado'
-
-            .map(item =>
-              `${item.produtoId}x ${item.quantidade}`
-            )
-            .join(', ')
+          clienteNome
         }
       })
     )
