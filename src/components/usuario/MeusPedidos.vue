@@ -9,7 +9,7 @@
         <select id="status-filter" v-model="statusFilter" @change="filtrarPedidos">
           <option value="">Todos</option>
           <option value="PENDENTE">Pendente</option>
-          <option value="CONFIRMADO">Confirmado</option>
+          <option value="PROCESSANDO">Processando</option>
           <option value="ENVIADO">Enviado</option>
           <option value="ENTREGUE">Entregue</option>
           <option value="CANCELADO">CANCELADO</option>
@@ -93,12 +93,12 @@
           <div v-if="podeCancelar(pedidoSelecionado)" class="detalhe-item">
             <button @click="cancelarPedido(pedidoSelecionado)" class="btn-cancelar">Cancelar Pedido</button>
           </div>
-          <div v-if="enderecoEntrega" class="detalhe-item">
+          <div v-if="enderecoEntrega" class="detalhe-item-endereco">
             <strong>Endereço de Entrega:</strong>
-            <p>{{ enderecoEntrega.rua }}, {{ enderecoEntrega.numero }}<br>
-              {{ enderecoEntrega.bairro }}, {{ enderecoEntrega.cidade }} - {{
-              enderecoEntrega.estado }}<br>
-              CEP: {{ enderecoEntrega.cep }}</p>
+            <p><strong>Rua:</strong> {{ enderecoEntrega.rua }}, <strong>Nº:</strong> {{ enderecoEntrega.numero }}</p>
+              <p><strong>Bairro:</strong> {{ enderecoEntrega.bairro }}</p>
+              <p><strong>CEP:</strong> {{ enderecoEntrega.cep }}</p>
+              <p><strong>Cidade:</strong> {{ enderecoEntrega.cidade }} - {{ enderecoEntrega.estado }}</p>
           </div>
         </div>
         <button @click="fecharModal" class="btn-fechar">Fechar</button>
@@ -400,6 +400,9 @@ th {
 .detalhe-item strong {
   display: block;
   margin-bottom: 0.5rem;
+}
+.detalhe-item-endereco {
+  margin-bottom: 1rem;
 }
 
 .itens-lista {

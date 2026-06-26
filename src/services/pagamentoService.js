@@ -25,5 +25,14 @@ export const pagamentoService = {
         console.error("Erro ao buscar pagamento por pedido:", error);
         throw error;
     }
+  },
+  async atualizarStatus(pagamentoId, novoStatus) {
+    try {
+        const response = await axiosInstance.put(`/payments/${pagamentoId}/status`, { status: novoStatus });
+        return mapPagamento(response.data);
+    } catch (error) {
+        console.error("Erro ao atualizar status do pagamento:", error);
+        throw error;
+    }
   }
 };

@@ -105,7 +105,7 @@ const carregarKPIs = async () => {
   try {
     const hoje = new Date().toISOString().split('T')[0]
     const pedidos = await pedidoService.listarTodos()
-    const pedidosHojeCount = pedidos.filter(p => p.dataCriacao && p.dataCriacao === hoje).length
+    const pedidosHojeCount = pedidos.filter(p => p.createdAt && p.createdAt === hoje).length
     pedidosHoje.value = pedidosHojeCount
 
     const produtos = await produtoService.listarTodos()
@@ -116,7 +116,7 @@ const carregarKPIs = async () => {
     const anoAtual = new Date().getFullYear()
     const vendas = pedidos.filter(p => {
       if (p.status !== 'entregue') return false
-      const data = p.dataCriacao.toDate ? p.dataCriacao.toDate() : new Date(p.dataCriacao)
+      const data = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt)
       return data.getMonth() + 1 === mesAtual && data.getFullYear() === anoAtual
     })
     const totalVendas = vendas.reduce((sum, p) => sum + (p.total || 0), 0)
@@ -139,8 +139,8 @@ const carregarPedidosRecentes = async () => {
     }, {})
 
     const pedidosOrdenados = pedidos.sort((a, b) => {
-      const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao)
-      const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao)
+      const dataA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt)
+      const dataB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt)
       return dataB - dataA
     })
     pedidosRecentes.value = pedidosOrdenados.slice(0, 4).map((p) => ({
@@ -163,7 +163,7 @@ const carregarProdutosVendidos = async () => {
 
     // Calculate total sold quantity for each product
     const vendasPorProduto = pedidos.reduce((acc, pedido) => {
-      if (pedido.itens && pedido.status === 'entregue') {
+      if (pedido.itens && pedido.status === 'ENTREGUE') {
         pedido.itens.forEach(item => {
           if (item.produtoId) {
             acc[item.produtoId] = (acc[item.produtoId] || 0) + (item.quantidade)

@@ -49,15 +49,12 @@
           </div>
           <div class="client-column">
             <h4>Endereço</h4>
-            <p>Rua: {{ endereco?.rua || 'N/A' }},
-             N°: {{ endereco?.numero || 'N/A' }},<br>
-             Compl.: {{ endereco?.complemento || 'N/A' }}<br>
-              Bairro: {{ endereco?.bairro || 'N/A' }},
-              CEP: {{ endereco?.cep || 'N/A' }}<br>
-              Cidade: {{ endereco?.cidade || 'N/A' }} -
-              Estado: {{ endereco?.estado || 'N/A' }}<br>
-              País: {{ endereco?.pais || 'N/A' }}
-            </p>
+            <p><strong>Rua:</strong> {{ endereco?.rua || 'N/A' }}, <strong>N°:</strong> {{ endereco?.numero || 'N/A' }}</p>
+            <p><strong>Compl.:</strong> {{ endereco?.complemento || 'N/A' }}</p>
+            <p><strong>Bairro:</strong> {{ endereco?.bairro || 'N/A' }}</p>
+            <p><strong>CEP:</strong> {{ endereco?.cep || 'N/A' }}</p>
+            <p><strong>Cidade:</strong> {{ endereco?.cidade || 'N/A' }} - {{ endereco?.estado }}</p>
+            <p><strong>País:</strong> {{ endereco?.pais || 'N/A' }}</p>
 
           </div>
         </div>
@@ -69,11 +66,13 @@
           <div v-for="(item, index) in pedido.itens" :key="index" class="item-row">
             <div class="item-info">
               <strong>{{ produtos[item.produtoId]?.nome || 'Produto não encontrado' }}</strong>
-              <span > {{ item.cor }}</span>
+              <span> {{ item.cor }}</span>
             </div>
             <div class="item-details">
               <span>Qtd: {{ item.quantidade }}</span>
-              <span>{{ (produtos[item.produtoId]?.preco || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
+              <span>{{ (produtos[item.produtoId]?.preco || 0).toLocaleString('pt-BR', {
+                style: 'currency', currency:
+                'BRL' }) }}</span>
             </div>
           </div>
         </div>
@@ -85,7 +84,9 @@
         <div class="summary-grid">
           <div class="summary-item">
             <span>Subtotal:</span>
-            <span>{{ (pedido.valorTotal - pedido.frete || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</span>
+            <span>{{ (pedido.valorTotal - pedido.frete || 0).toLocaleString('pt-BR', {
+              style: 'currency', currency:
+              'BRL' }) }}</span>
           </div>
           <div class="summary-item">
             <span>Frete:</span>
@@ -93,7 +94,8 @@
           </div>
           <div class="summary-item total">
             <span><strong>Total:</strong></span>
-            <span><strong>{{ (pedido.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</strong></span>
+            <span><strong>{{ (pedido.valorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                }}</strong></span>
           </div>
         </div>
       </div>
@@ -126,7 +128,7 @@ const statusOptions = [
   { value: 'PROCESSANDO', label: 'Processando', class: 'status-attention' },
   { value: 'ENVIADO', label: 'Enviado', class: 'status-attention' },
   { value: 'ENTREGUE', label: 'Entregue', class: 'status-success' },
-  { value: 'CANCELADO', label: 'Cancelar', class: 'status-critical' }
+  { value: 'CANCELADO', label: 'Cancelado', class: 'status-critical' }
 ]
 
 const statusMudou = computed(() => statusAtual.value !== pedido.value?.status)
@@ -198,7 +200,8 @@ const alterarStatus = (novoStatus) => {
 
 const salvarStatus = async () => {
   try {
-    await pedidoService.atualizar(pedido.value.id, { status: statusAtual.value })
+    await pedidoService.atualizarStatus(pedido.value.id, statusAtual.value )
+    await pagamentoService.atualizarStatus(pedido.value.pagamentoId, statusAtual.value)
     pedido.value.status = statusAtual.value
     alert('Status atualizado com sucesso!')
   } catch (err) {
@@ -207,8 +210,8 @@ const salvarStatus = async () => {
   }
 }
 
-onMounted( () => {
-   carregarDados()
+onMounted(() => {
+  carregarDados()
 })
 </script>
 
@@ -239,7 +242,8 @@ onMounted( () => {
   background-color: #0056b3;
 }
 
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 40px;
   font-size: 18px;

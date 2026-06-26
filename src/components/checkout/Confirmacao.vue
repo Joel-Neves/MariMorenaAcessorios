@@ -150,7 +150,7 @@ const finalizarPedido = async () => {
       freight: frete.value,
       orderStatus: 'PENDENTE',
       addressId: endereco.value.id,
-      createdAt: new Date().toLocaleDateString('sv-SE')
+      createdAt: new Date()
     };    
     const pedidoCriado = await pedidoService.criar(pedido);
     console.log('Pedido criado:', pedidoCriado);
