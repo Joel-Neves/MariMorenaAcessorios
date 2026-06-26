@@ -4,6 +4,7 @@ const mapPedido = (pedido) => ({
   id: pedido.id,
   clienteId: pedido.clientId,
   enderecoId: pedido.addressId || null,
+  clienteNome: pedido.clientName,
   itens: (pedido.orderItems || []).map(item => ({
     produtoId: item.productId,
     quantidade: item.quantity

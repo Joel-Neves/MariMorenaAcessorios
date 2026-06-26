@@ -67,27 +67,7 @@ const filteredPedidos = computed(() => {
 })
 const carregarPedidos = async () => {
   try {
-    const todosPedidos = await pedidoService.listarTodos()
-
-    const pedidosComClientes = await Promise.all(
-      todosPedidos.map(async pedido => {
-
-        let clienteNome = 'Cliente não encontrado'
-        try {
-          const cliente = await usuarioService.buscarPorId(pedido.clienteId)
-          clienteNome = cliente?.nome ?? 'Cliente não encontrado'
-        } catch {
-          clienteNome = 'Cliente não encontrado'
-        }
-
-        return {
-          ...pedido,
-          clienteNome
-        }
-      })
-    )
-
-    pedidos.value = pedidosComClientes
+    pedidos.value = await pedidoService.listarTodos()
 
   } catch (err) {
     error.value = 'Erro ao carregar pedidos: ' + err.message
