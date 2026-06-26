@@ -19,7 +19,7 @@
           <tr v-for="cliente in clientes" :key="cliente.id">
             <td>{{ cliente.nome }}</td>
             <td>{{ cliente.email }}</td>
-            <td>{{ cliente.phone || 'N/A' }}</td>
+            <td>{{ (cliente.telefone)?.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') || 'N/A' }}</td>
             <td>{{ cliente.ultimaCompra || 'N/A' }}</td>
             <td>{{ cliente.valorTotal }}</td>
             <td>
@@ -52,7 +52,7 @@ const carregarClientes = async () => {
       usuarios.map(async (cliente) => {
         try {
           const pedidos = await pedidoService.buscarPorUsuario(cliente.id)
-          const pedidosCompletados = pedidos.filter(p => p.status === 'concluido')
+          const pedidosCompletados = pedidos.filter(p => p.status === 'CONCLUIDO')
 
           let ultimaCompra = 'N/A'
           let valorTotal = 0
@@ -60,9 +60,9 @@ const carregarClientes = async () => {
           if (pedidosCompletados.length > 0) {
             // Última compra é a mais recente
             const pedidoMaisRecente = pedidosCompletados.sort((a, b) =>
-              new Date(b.dataCriacao) - new Date(a.dataCriacao)
+              new Date(b.createdAt) - new Date(a.createdAt)
             )[0]
-            ultimaCompra = new Date(pedidoMaisRecente.dataCriacao).toLocaleDateString('pt-BR')
+            ultimaCompra = new Date(pedidoMaisRecente.createdAt).toLocaleDateString('pt-BR')
 
             // Valor total é a soma de todos os pedidos concluídos
             valorTotal = pedidosCompletados.reduce((total, pedido) => total + (pedido.valorTotal || 0), 0)
