@@ -19,7 +19,7 @@
           <span>{{ cliente.email }}</span>
 
           <strong>Telefone</strong>
-          <span>{{ cliente.phone || 'N/A' }}</span>
+          <span>{{ cliente.telefone || 'N/A' }}</span>
 
           <strong>Endereço</strong>
           <span>{{ enderecoFormatado }}</span>
@@ -56,12 +56,12 @@
 
           <tbody>
             <tr v-for="pedido in pedidos" :key="pedido.id">
-              <td>#{{ pedido.id.slice(-8).toUpperCase() }}</td>
-              <td>{{ pedido.dataCriacao }}</td>
+              <td>#{{ pedido.id }}</td>
+              <td>{{ pedido.createdAt }}</td>
               <td>
                 <span :class="['status', statusClass(pedido.status)]">{{ pedido.status }}</span>
               </td>
-              <td>{{ valorPedidoFormatado(pedido.total) }}</td>
+              <td>{{ valorPedidoFormatado(pedido.valorTotal) }}</td>
               <td>{{ totalProdutos(pedido) }}</td>
             </tr>
           </tbody>
