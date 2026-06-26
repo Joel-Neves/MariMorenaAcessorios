@@ -47,7 +47,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { pedidoService } from '@/services/pedidoService'
-import { usuarioService } from '@/services/usuarioService'
 
 const pedidos = ref([])
 const loading = ref(true)
