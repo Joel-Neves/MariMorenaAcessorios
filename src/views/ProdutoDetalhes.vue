@@ -61,7 +61,7 @@
         <div v-if="authService.isAuthenticated()" class="form-comentario">
           <label for="comentario">Deixe seu comentário:</label>
           <textarea class="form-label" v-model="textoComentario" placeholder="Escreva seu comentário aqui..."></textarea>
-          <button v-if="authService.isAuthenticated()" :disabled="!textoComentario.trim()" class="btn-adicionar" @click="enviarComentario">Enviar
+          <button v-if="authService.getCurrentUser()" :disabled="!textoComentario.trim()" class="btn-adicionar" @click="enviarComentario">Enviar
             Comentário</button>
         </div>
         <div v-if="comentarios.length > 0" class="lista-comentarios">

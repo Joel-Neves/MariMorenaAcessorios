@@ -4,13 +4,6 @@ import { comentarioService } from "@/services/comentarioService";
 export const useComentarioStore = defineStore("comentario", {
   state: () => ({
     comentarios: [],
-    paginacao: {
-      currentPage: 0,
-      totalPages: 0,
-      totalElements: 0,
-      isLast: false,
-      isFirst: true,
-    },
     isLoading: false,
     error: null,
   }),
@@ -23,24 +16,18 @@ export const useComentarioStore = defineStore("comentario", {
   },
 
   actions: {
-    async carregarComentarios(produtoId, page = 0) {
-            this.isLoading = true;
-            this.error = null;
-            try {
-                const resultado = await comentarioService.buscarPorProduto(produtoId, page);
-                
-                // Se o objetivo é paginação tradicional (substituir a lista a cada página)
-                this.comentarios = resultado.comentarios;
-                
-                // Atualiza o estado dos controles de paginação
-                this.paginacao = resultado.paginacao;
-            } catch (error) {
-                this.error = error;
-                throw error;
-            } finally {
-                this.isLoading = false;
-            }
-        },
+    async carregarComentarios(produtoId) {
+      this.isLoading = true;
+      this.error = null;
+      try {
+        const comentarios = await comentarioService.buscarPorProduto(produtoId);
+        this.comentarios = comentarios;
+      } catch (error) {
+        this.error = error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
     async adicionarComentario(comentario) {
       try {

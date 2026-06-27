@@ -27,15 +27,11 @@ export const comentarioService = {
       throw error;
     }
   },
-
+/*
   async buscarPorProduto(produtoId, page = 0, size = 5) {
     const response = await axiosInstance.get(`/comments/product/${produtoId}`, {
       params: { page, size, sort: "createdAt" },
     });
-
-    // Separamos o joio do trigo.
-    // response.data.content tem os comentários de fato.
-    // O resto é metadado essencial para a interface saber onde está.
     return {
       comentarios: response.data.content.map(mapComentario),
       paginacao: {
@@ -46,6 +42,15 @@ export const comentarioService = {
         isFirst: response.data.first,
       },
     };
+  },
+  */
+ async buscarPorProduto(produtoId) {
+    try {
+      const comentarios = await axiosInstance.get(`/comments/product/${produtoId}`);
+      return comentarios.data.map(mapComentario);
+    } catch (error) {
+      throw error;
+    }
   },
   async buscarPorCliente(clienteId) {
     try {
