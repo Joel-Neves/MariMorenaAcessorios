@@ -21,8 +21,14 @@
           <strong>Telefone</strong>
           <span>{{ cliente.telefone || 'N/A' }}</span>
 
-          <strong>Endereço</strong>
-          <span>{{ enderecoFormatado }}</span>
+          <strong>Endereços</strong>
+          <div v-if="enderecos.length > 0" class="enderecos-lista">
+            <div v-for="(endereco, index) in enderecos" :key="endereco.id" class="endereco-item">
+              <span class="endereco-titulo">Endereço {{ index + 1 }}</span>
+              <span>{{ formatarEndereco(endereco) }}</span>
+            </div>
+          </div>
+          <span v-else>N/A</span>
           <div class="info-item">
             <strong>Total Gasto</strong>
             <span>{{ totalGastoFormatado }}</span>
@@ -80,11 +86,13 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usuarioService } from '@/services/usuarioService'
 import { pedidoService } from '@/services/pedidoService'
+import { enderecoService } from '@/services/enderecoService'
 
 const route = useRoute()
 
 const cliente = ref(null)
 const pedidos = ref([])
+const enderecos = ref([])
 const loading = ref(true)
 const error = ref(null)
 const totalGasto = ref(0)
@@ -100,6 +108,7 @@ const carregarDados = async () => {
     const id = route.params.id
     cliente.value = await usuarioService.buscarPorId(id)
     pedidos.value = await pedidoService.buscarPorUsuario(id)
+    enderecos.value = await enderecoService.buscarPorUsuario(id)
 
     totalGasto.value = pedidos.value
       .reduce((sum, p) => sum + (p.total || 0), 0)
@@ -131,8 +140,7 @@ const enviarEmail = () => {
     window.location.href = `mailto:${cliente.value.email}`
   }
 }
-const enderecoFormatado = computed(() => {
-  const e = cliente.value?.endereco
+const formatarEndereco = (e) => {
   if (!e) return "N/A"
 
   const partes = [
@@ -147,7 +155,7 @@ const enderecoFormatado = computed(() => {
   ]
 
   return partes.filter(Boolean).join(" ")
-})
+}
 
 onMounted(() => {
   carregarDados()
@@ -284,6 +292,28 @@ onMounted(() => {
 .status-critical {
   background: #ffd6d6;
   color: #a30707;
+}
+
+.enderecos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.endereco-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.endereco-titulo {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
 /* Sem pedidos */
